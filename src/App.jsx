@@ -6,11 +6,9 @@ import NavBar from './components/NavBar';
 import HeroSection from './components/HeroSection';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div>
-      <Navbar />
+    <div className="min-h-screen bg-white">
+      <NavBar />
       <HeroSection />
     </div>
   );
