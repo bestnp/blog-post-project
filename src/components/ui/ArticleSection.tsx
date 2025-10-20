@@ -2,11 +2,22 @@ import React from "react";
 import Input from "@/components/ui/Input";
 import AppButton from "@/components/ui/AppButton";
 import { SearchLight } from "@/icon/IconsAll";
+import BlogCard from "@/components/ui/BlogCard";
+import { blogPosts, BlogPost } from "@/data/blogPost";
 
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
 export default function ArticleSection() {
   const [selected, setSelected] = React.useState("Highlight");
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  // Filter blog posts based on selected category and search term
+  const filteredPosts = blogPosts.filter((post: BlogPost) => {
+    const matchesCategory = selected === "Highlight" || post.category === selected;
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <section className="w-full px-4 pt-6 pb-3 max-w-[1200px] mx-auto">
@@ -17,6 +28,8 @@ export default function ArticleSection() {
         <div className="w-full relative">
           <Input
             placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="rounded-[8px] bg-white text-sm pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
           />
           <span className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-brown-400 pointer-events-none">
@@ -67,6 +80,8 @@ export default function ArticleSection() {
         <div className="flex items-center w-[350px] relative">
           <Input
             placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="rounded-[8px] bg-white text-body-lg pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
           />
           <span className="absolute right-[12px] text-brown-400 pointer-events-none">
@@ -74,6 +89,22 @@ export default function ArticleSection() {
           </span>
         </div>
       </div>
+
+      {/* Blog Posts Grid */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+        {filteredPosts.map((post: BlogPost) => (
+          <BlogCard key={post.id} post={post} />
+        ))}
+      </div>
+
+      {/* No results message */}
+      {filteredPosts.length === 0 && (
+        <div className="mt-8 text-center py-12">
+          <p className="text-brown-400 text-body-lg">
+            No articles found matching your criteria.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
