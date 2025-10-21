@@ -1,23 +1,105 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Input from "@/components/ui/Input";
 import AppButton from "@/components/ui/AppButton";
 import { SearchLight } from "@/icon/IconsAll";
 import BlogCard from "@/components/ui/BlogCard";
-import { blogPosts, BlogPost } from "@/data/blogPost";
+import { blogApi, BlogPost, formatDate } from "@/services/api";
 
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
 export default function ArticleSection() {
-  const [selected, setSelected] = React.useState("Highlight");
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [selected, setSelected] = useState("Highlight");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalPosts, setTotalPosts] = useState(0);
 
-  // Filter blog posts based on selected category and search term
-  const filteredPosts = blogPosts.filter((post: BlogPost) => {
-    const matchesCategory = selected === "Highlight" || post.category === selected;
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // ฟังก์ชันดึงข้อมูลจาก API
+  const fetchPosts = async (page: number = 1, category?: string, keyword?: string, append: boolean = false) => {
+    try {
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+      
+      const params = {
+        page,
+        limit: 6,
+        ...(category && category !== "Highlight" && { category }),
+        ...(keyword && { keyword }),
+      };
+
+      const response = await blogApi.getPosts(params);
+      
+      if (append) {
+        // ป้องกันข้อมูลซ้ำโดยใช้ unique key (id)
+        setPosts(prev => {
+          const existingIds = new Set(prev.map(post => post.id));
+          const newPosts = response.posts.filter(post => !existingIds.has(post.id));
+          return [...prev, ...newPosts];
+        });
+      } else {
+        setPosts(response.posts);
+      }
+      
+      const hasNext = response.nextPage !== undefined && response.posts.length > 0;
+      setHasNextPage(hasNext);
+      setTotalPosts(response.totalPosts);
+      setCurrentPage(response.currentPage);
+    } catch (err) {
+      setError("Failed to load posts. Please try again.");
+      console.error("Error fetching posts:", err);
+    } finally {
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
+    }
+  };
+
+  // ดึงข้อมูลครั้งแรกเมื่อ component mount
+  useEffect(() => {
+    fetchPosts(1, selected, searchTerm);
+  }, []);
+
+  // ดึงข้อมูลใหม่เมื่อเปลี่ยน category
+  useEffect(() => {
+    setCurrentPage(1);
+    setPosts([]); // Clear posts array ก่อนดึงข้อมูลใหม่
+    setHasNextPage(false); // Reset pagination state
+    setTotalPosts(0);
+    fetchPosts(1, selected, searchTerm);
+  }, [selected]);
+
+  // ดึงข้อมูลใหม่เมื่อเปลี่ยน search term (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1);
+      setPosts([]); // Clear posts array ก่อนดึงข้อมูลใหม่
+      setHasNextPage(false); // Reset pagination state
+      setTotalPosts(0);
+      fetchPosts(1, selected, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // ฟังก์ชันสำหรับ View More
+  const handleViewMore = (e: React.MouseEvent) => {
+    e.preventDefault(); // ป้องกันการเด้งหน้า
+    e.stopPropagation(); // ป้องกัน event bubbling
+    
+    if (hasNextPage && !loadingMore && !loading) {
+      fetchPosts(currentPage + 1, selected, searchTerm, true);
+    }
+  };
 
   return (
     <section className="w-full px-4 pt-6 pb-3 max-w-[1200px] mx-auto">
@@ -90,20 +172,76 @@ export default function ArticleSection() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && posts.length === 0 && (
+        <div className="mt-8 text-center py-12">
+          <div className="inline-flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
+            <p className="text-brown-600 text-body-lg">Loading...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="mt-8 text-center py-12">
+          <p className="text-red-500 text-body-lg mb-4">{error}</p>
+          <AppButton 
+            onClick={() => fetchPosts(1, selected, searchTerm)}
+            variant="default"
+            className="px-6 py-2"
+          >
+            Try Again
+          </AppButton>
+        </div>
+      )}
+
       {/* Blog Posts Grid */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-        {filteredPosts.map((post: BlogPost) => (
-          <BlogCard key={post.id} post={post} />
-        ))}
-      </div>
+      {!loading && !error && (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          {posts.map((post: BlogPost) => (
+            <BlogCard key={post.id} post={post} />
+          ))}
+        </div>
+      )}
 
       {/* No results message */}
-      {filteredPosts.length === 0 && (
+      {!loading && !error && posts.length === 0 && (
         <div className="mt-8 text-center py-12">
           <p className="text-brown-400 text-body-lg">
             No articles found matching your criteria.
           </p>
         </div>
+      )}
+
+      {/* View More Button */}
+      {!loading && !error && posts.length > 0 && hasNextPage && !loadingMore && (
+        <div className="text-center pt-12 pb-10 md:pt-[80px] md:pb-[120px]">
+          <AppButton
+            onClick={handleViewMore}
+            disabled={loadingMore}
+            variant="ghost"
+            className="px-8 py-3 text-brown-600 text-body-lg underline hover:no-underline transition-all duration-200 hover:text-brown-500 disabled:opacity-50"
+          >
+            View More
+          </AppButton>
+        </div>
+      )}
+
+
+      {/* Loading indicator for View More */}
+      {loadingMore && (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
+            <p className="text-brown-600 text-body-lg">Loading more posts...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom spacing when no View More button */}
+      {!loading && !error && posts.length > 0 && !hasNextPage && (
+        <div className="pb-10 md:pb-[120px]"></div>
       )}
     </section>
   );

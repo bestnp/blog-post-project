@@ -1,5 +1,6 @@
 import React from "react";
-import { BlogPost } from "@/data/blogPost";
+import { BlogPost } from "@/services/api";
+import { formatDate } from "@/services/api";
 
 interface BlogCardProps {
   post: BlogPost;
@@ -45,7 +46,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
         <div className="flex items-center text-sm text-brown-500">
           <span>{post.author}</span>
           <span className="mx-2 text-brown-300">|</span>
-          <span>{post.date}</span>
+          <span>{formatDate(post.date)}</span>
         </div>
       </div>
     </div>
