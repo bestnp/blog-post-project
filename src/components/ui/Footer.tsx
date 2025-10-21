@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
                 href="https://linkedin.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <span className="text-white text-xs font-bold">in</span>
               </a>
@@ -23,7 +23,7 @@ const Footer: React.FC = () => {
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <GithubIcon className="w-4 h-4 text-white" />
               </a>
@@ -31,7 +31,7 @@ const Footer: React.FC = () => {
                 href="https://google.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <span className="text-white text-xs font-bold">G</span>
               </a>
@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
           <div>
             <a 
               href="/" 
-              className="text-brown-600 text-body-lg underline hover:text-brown-500 transition-colors"
+              className="text-brown-500 text-body-lg underline hover:text-brown-400 transition-colors"
             >
               Home page
             </a>
@@ -52,13 +52,13 @@ const Footer: React.FC = () => {
         {/* Desktop Layout */}
         <div className="hidden lg:flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <span className="text-brown-600 text-body-lg font-medium">Get in touch</span>
+            <span className="text-brown-500 text-body-lg ">Get in touch</span>
             <div className="flex space-x-3">
               <a 
                 href="https://linkedin.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <span className="text-white text-xs font-bold">in</span>
               </a>
@@ -66,7 +66,7 @@ const Footer: React.FC = () => {
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <GithubIcon className="w-4 h-4 text-white" />
               </a>
@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
                 href="https://google.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full bg-brown-600 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
               >
                 <span className="text-white text-xs font-bold">G</span>
               </a>
