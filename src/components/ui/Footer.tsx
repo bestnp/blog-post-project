@@ -1,9 +1,9 @@
 import React from "react";
-import { FacebookIcon, GithubIcon, GoogleIcon, TwitterIcon } from "@/icon/IconsAll";
+import { LinkedInIcon, GithubIcon, GoogleIcon } from "@/icon/IconsAll";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-brown-100 py-8">
+    <footer className="bg-brown-200 py-8">
       <div className="max-w-[1200px] mx-auto px-4">
         {/* Mobile Layout */}
         <div className="lg:hidden text-center space-y-6">
@@ -15,25 +15,25 @@ const Footer: React.FC = () => {
                 href="https://linkedin.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <span className="text-white text-xs font-bold">in</span>
+                <LinkedInIcon className="w-6 h-6 text-brown-500" />
               </a>
               <a 
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <GithubIcon className="w-4 h-4 text-white" />
+                <GithubIcon className="w-6 h-6 text-brown-500" />
               </a>
               <a 
                 href="https://google.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <span className="text-white text-xs font-bold">G</span>
+                <GoogleIcon className="w-6 h-6 text-brown-500" />
               </a>
             </div>
           </div>
@@ -58,25 +58,25 @@ const Footer: React.FC = () => {
                 href="https://linkedin.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <span className="text-white text-xs font-bold">in</span>
+                <LinkedInIcon className="w-6 h-6 text-brown-500" />
               </a>
               <a 
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <GithubIcon className="w-4 h-4 text-white" />
+                <GithubIcon className="w-6 h-6 text-brown-500" />
               </a>
               <a 
                 href="https://google.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center hover:bg-brown-500 transition-colors"
+                className="hover:opacity-80 transition-opacity"
               >
-                <span className="text-white text-xs font-bold">G</span>
+                <GoogleIcon className="w-6 h-6 text-brown-500" />
               </a>
             </div>
           </div>

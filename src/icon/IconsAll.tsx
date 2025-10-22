@@ -2,6 +2,7 @@ export { default as FacebookIcon } from "@/icon/FacebookIcon";
 export { default as GithubIcon } from "@/icon/GithubIcon";
 export { default as GoogleIcon } from "@/icon/GoogleIcon";
 export { default as TwitterIcon } from "@/icon/TwitterIcon";
+export { default as LinkedInIcon } from "@/icon/LinkedInIcon";
 export { default as LogoIcon } from "@/icon/LogoIcon";
 
 // Light icons

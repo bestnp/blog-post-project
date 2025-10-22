@@ -2,6 +2,21 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://blog-post-project-api.vercel.app';
 
+export interface Author {
+  id: number;
+  name: string;
+  avatar: string;
+  bio: string;
+}
+
+export interface Comment {
+  id: number;
+  author: string;
+  avatar: string;
+  date: string;
+  content: string;
+}
+
 export interface BlogPost {
   id: number;
   image: string;
@@ -9,6 +24,7 @@ export interface BlogPost {
   title: string;
   description: string;
   author: string;
+  authorDetails?: Author;
   date: string;
   likes: number;
   content: string;
@@ -57,6 +73,44 @@ export const blogApi = {
       return response.data;
     } catch (error) {
       console.error('Error fetching blog post:', error);
+      throw error;
+    }
+  },
+
+  // ดึงข้อมูล author details
+  getAuthorByName: async (name: string): Promise<Author> => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/authors`, {
+        params: { name }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching author:', error);
+      throw error;
+    }
+  },
+
+  // ดึงข้อมูล comments ของบทความ
+  getComments: async (postId: number): Promise<Comment[]> => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/posts/${postId}/comments`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      // Return empty array if API fails
+      return [];
+    }
+  },
+
+  // ส่ง comment ใหม่
+  postComment: async (postId: number, content: string): Promise<Comment> => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/posts/${postId}/comments`, {
+        content
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error posting comment:', error);
       throw error;
     }
   },
