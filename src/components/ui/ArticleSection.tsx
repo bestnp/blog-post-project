@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import AppButton from "@/components/ui/AppButton";
 import { SearchLight } from "@/icon/IconsAll";
 import BlogCard from "@/components/ui/BlogCard";
+import SearchDropdown from "@/components/ui/SearchDropdown";
 import { blogApi, BlogPost, formatDate } from "@/services/api";
 
+// Categories - สามารถดึงจาก API ได้ในอนาคต
 const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
 export default function ArticleSection() {
@@ -17,6 +20,13 @@ export default function ArticleSection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalPosts, setTotalPosts] = useState(0);
+  
+  // Search dropdown states
+  const [searchDropdownResults, setSearchDropdownResults] = useState<BlogPost[]>([]);
+  const [isSearchDropdownLoading, setIsSearchDropdownLoading] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const navigate = useNavigate();
+  const searchTimeoutRef = useRef<number | undefined>(undefined);
 
   // ฟังก์ชันดึงข้อมูลจาก API
   const fetchPosts = async (page: number = 1, category?: string, keyword?: string, append: boolean = false) => {
@@ -101,6 +111,68 @@ export default function ArticleSection() {
     }
   };
 
+  // ฟังก์ชันสำหรับจัดการ search dropdown
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (value.trim().length >= 2) {
+      // Debounce search for dropdown
+      searchTimeoutRef.current = window.setTimeout(async () => {
+        setIsSearchDropdownLoading(true);
+        try {
+          const response = await blogApi.getPosts({
+            keyword: value.trim(),
+            limit: 6
+          });
+          setSearchDropdownResults(response.posts);
+          setShowSearchDropdown(true);
+        } catch (error) {
+          console.error('Search dropdown error:', error);
+          setSearchDropdownResults([]);
+        } finally {
+          setIsSearchDropdownLoading(false);
+        }
+      }, 300);
+    } else {
+      setSearchDropdownResults([]);
+      setShowSearchDropdown(false);
+    }
+  };
+
+  const handlePostClick = (postId: number) => {
+    navigate(`/post/${postId}`);
+    setSearchTerm('');
+    setShowSearchDropdown(false);
+  };
+
+  const handleSearchBlur = () => {
+    // Delay hiding dropdown to allow clicking on results
+    setTimeout(() => {
+      setShowSearchDropdown(false);
+    }, 200);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchDropdownResults.length > 0) {
+      setShowSearchDropdown(true);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <section className="w-full px-4 pt-6 pb-3 max-w-[1200px] mx-auto">
       <h3 className="text-h3 font-bold mb-4 text-brown-600">Latest articles</h3>
@@ -111,12 +183,24 @@ export default function ArticleSection() {
           <Input
             placeholder="Search"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
             className="rounded-[8px] bg-white text-sm pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
           />
           <span className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-brown-400 pointer-events-none">
             <SearchLight width={18} height={18} />
           </span>
+          
+          {/* Mobile Search Dropdown */}
+          {showSearchDropdown && (
+            <SearchDropdown
+              results={searchDropdownResults}
+              isLoading={isSearchDropdownLoading}
+              onPostClick={handlePostClick}
+              onClose={() => setShowSearchDropdown(false)}
+            />
+          )}
         </div>
         
         {/* Category Filter - Mobile */}
@@ -163,12 +247,24 @@ export default function ArticleSection() {
           <Input
             placeholder="Search"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
             className="rounded-[8px] bg-white text-body-lg pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
           />
           <span className="absolute right-[12px] text-brown-400 pointer-events-none">
             <SearchLight width={20} height={20} />
           </span>
+          
+          {/* Desktop Search Dropdown */}
+          {showSearchDropdown && (
+            <SearchDropdown
+              results={searchDropdownResults}
+              isLoading={isSearchDropdownLoading}
+              onPostClick={handlePostClick}
+              onClose={() => setShowSearchDropdown(false)}
+            />
+          )}
         </div>
       </div>
 
