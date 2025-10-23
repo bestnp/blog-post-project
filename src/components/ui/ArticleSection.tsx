@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
-import AppButton from "@/components/ui/AppButton";
+import { Tab, TabGroup } from "@/components/ui/Tab";
+import { Button } from "@/components/ui/Button";
 import { SearchLight } from "@/icon/IconsAll";
 import BlogCard from "@/components/ui/BlogCard";
 import SearchDropdown from "@/components/ui/SearchDropdown";
@@ -186,20 +187,21 @@ export default function ArticleSection() {
             onChange={handleSearchChange}
             onFocus={handleSearchFocus}
             onBlur={handleSearchBlur}
-            className="rounded-[8px] bg-white text-sm pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
+            showSearchIcon={true}
+            showClearButton={false}
+            className="rounded-[8px] bg-white text-body-sm border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
           />
-          <span className="absolute right-[12px] top-1/2 transform -translate-y-1/2 text-brown-400 pointer-events-none">
-            <SearchLight width={18} height={18} />
-          </span>
           
           {/* Mobile Search Dropdown */}
           {showSearchDropdown && (
-            <SearchDropdown
-              results={searchDropdownResults}
-              isLoading={isSearchDropdownLoading}
-              onPostClick={handlePostClick}
-              onClose={() => setShowSearchDropdown(false)}
-            />
+            <div className="absolute top-full left-0 w-full mt-2 z-50">
+              <SearchDropdown
+                results={searchDropdownResults}
+                isLoading={isSearchDropdownLoading}
+                onPostClick={handlePostClick}
+                onClose={() => setShowSearchDropdown(false)}
+              />
+            </div>
           )}
         </div>
         
@@ -228,42 +230,43 @@ export default function ArticleSection() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex bg-brown-200 flex-row items-center justify-between rounded-[16px] py-4 px-8 lg:px-12 w-full min-h-[60px]">
+      <div className="hidden lg:flex bg-brown-200 flex-row items-center justify-between rounded-[16px] py-[16px] px-[24px] gap-6">
         {/* Tabs Filter */}
-        <div className="flex flex-row gap-6">
+        <TabGroup className="gap-2">
           {categories.map((cat) => (
-            <AppButton
+            <Tab
               key={cat}
-              variant={selected === cat ? "selected" : "ghost"}
+              isActive={selected === cat}
               onClick={() => setSelected(cat)}
-              className="px-4 py-2"
+              className="px-5 py-3 text-body-sm"
             >
               {cat}
-            </AppButton>
+            </Tab>
           ))}
-        </div>
+        </TabGroup>
         {/* Search bar */}
-        <div className="flex items-center w-[350px] relative">
+        <div className="relative w-[360px]">
           <Input
             placeholder="Search"
             value={searchTerm}
             onChange={handleSearchChange}
             onFocus={handleSearchFocus}
             onBlur={handleSearchBlur}
-            className="rounded-[8px] bg-white text-body-lg pr-10 border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[40px] w-full"
+            showSearchIcon={true}
+            showClearButton={false}
+            className="rounded-[8px] bg-white text-body-md border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[48px] w-full"
           />
-          <span className="absolute right-[12px] text-brown-400 pointer-events-none">
-            <SearchLight width={20} height={20} />
-          </span>
           
           {/* Desktop Search Dropdown */}
           {showSearchDropdown && (
-            <SearchDropdown
-              results={searchDropdownResults}
-              isLoading={isSearchDropdownLoading}
-              onPostClick={handlePostClick}
-              onClose={() => setShowSearchDropdown(false)}
-            />
+            <div className="absolute top-full left-0 w-full mt-2 z-50">
+              <SearchDropdown
+                results={searchDropdownResults}
+                isLoading={isSearchDropdownLoading}
+                onPostClick={handlePostClick}
+                onClose={() => setShowSearchDropdown(false)}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -282,13 +285,13 @@ export default function ArticleSection() {
       {error && (
         <div className="mt-8 text-center py-12">
           <p className="text-red-500 text-body-lg mb-4">{error}</p>
-          <AppButton 
+          <Button 
             onClick={() => fetchPosts(1, selected, searchTerm)}
             variant="default"
-            className="px-6 py-2"
+            size="default"
           >
             Try Again
-          </AppButton>
+          </Button>
         </div>
       )}
 
@@ -313,14 +316,15 @@ export default function ArticleSection() {
       {/* View More Button */}
       {!loading && !error && posts.length > 0 && hasNextPage && !loadingMore && (
         <div className="text-center pt-12 pb-10 md:pt-[80px] md:pb-[120px]">
-          <AppButton
+          <Button
             onClick={handleViewMore}
             disabled={loadingMore}
-            variant="ghost"
-            className="px-8 py-3 text-brown-600 text-body-lg underline hover:no-underline transition-all duration-200 hover:text-brown-500 disabled:opacity-50"
+            variant="text"
+            size="lg"
+            className="underline hover:no-underline"
           >
             View More
-          </AppButton>
+          </Button>
         </div>
       )}
 

@@ -3,6 +3,15 @@ const config: any = {
   content: [
     './src/**/*.{js,jsx,ts,tsx}', // ต้องตรงกับที่คุณเขียน component
   ],
+  safelist: [
+    'text-h1',
+    'text-h2',
+    'text-h3',
+    'text-h4',
+    'text-body-lg',
+    'text-body-md',
+    'text-body-sm',
+  ],
   theme: {
     extend: {
       colors: {
@@ -22,13 +31,13 @@ const config: any = {
         sans: ['Poppins', 'sans-serif'],
       },
       fontSize: {
-        'h1': '52px',
-        'h2': '40px',
-        'h3': '24px',
-        'h4': '20px',
-        'body-lg': '16px',
-        'body-md': '14px',
-        'body-sm': '12px',
+        'h1': ['52px', { lineHeight: '1.2' }],
+        'h2': ['40px', { lineHeight: '1.2' }],
+        'h3': ['24px', { lineHeight: '1.3' }],
+        'h4': ['20px', { lineHeight: '1.4' }],
+        'body-lg': ['16px', { lineHeight: '1.5' }],
+        'body-md': ['14px', { lineHeight: '1.5' }],
+        'body-sm': ['12px', { lineHeight: '1.5' }],
       },
       fontWeight: {
         'regular': 400,

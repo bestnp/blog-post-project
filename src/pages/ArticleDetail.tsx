@@ -8,6 +8,10 @@ import { HappyLight, CopyLight, FileLight, FacebookIcon, LinkedInIcon, TwitterIc
 import NavBar from '@/components/ui/NavBar';
 import Footer from '@/components/ui/Footer';
 import LoginDialog from '@/components/ui/LoginDialog';
+import { Button } from '@/components/ui/Button';
+import TextArea from '@/components/ui/TextArea';
+import CommentCard from '@/components/ui/CommentCard';
+import { Alert } from '@/components/ui/Alert';
 
 const ArticleDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -21,6 +25,7 @@ const ArticleDetail: React.FC = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false); // Login dialog state
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
+  const [showCopyAlert, setShowCopyAlert] = useState(false);
 
   // Scroll to top when component mounts or postId changes
   useEffect(() => {
@@ -73,9 +78,11 @@ const ArticleDetail: React.FC = () => {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success('Copied!', {
-      description: 'This article has been copied to your clipboard.'
-    });
+    setShowCopyAlert(true);
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+      setShowCopyAlert(false);
+    }, 3000);
   };
 
   const handleLikeClick = () => {
@@ -242,44 +249,41 @@ const ArticleDetail: React.FC = () => {
               
               {/* Comment Input */}
               <div className="mb-8">
-                <textarea
+                <TextArea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="What are your thoughts?"
-                  rows={4}
-                  className="w-full border border-brown-300 rounded-lg focus:ring-2 focus:ring-brown-200 focus:border-brown-300 outline-none text-body-md resize-y mb-2"
-                  style={{ 
-                    padding: '16px 32px 32px 16px'
-                  }}
+                  state="default"
                 />
-                <div className="flex justify-end">
-                  <button
+                <div className="flex justify-end mt-2">
+                  <Button
                     onClick={handleSendComment}
                     disabled={commentsLoading}
-                    className="px-[40px] py-[12px] bg-brown-600 text-white rounded-full hover:bg-brown-700 disabled:bg-brown-400 disabled:cursor-not-allowed transition-colors text-body-lg font-medium"
+                    variant="default"
+                    size="lg"
+                    className="!text-white"
                   >
                     {commentsLoading ? 'Sending...' : 'Send'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* Comments List */}
-              <div className="space-y-8">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-4">
-                    <img
-                      src={comment.avatar}
-                      alt={comment.author}
-                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div className="mb-2">
-                        <h4 className="font-bold text-brown-600 text-body-lg">{comment.author}</h4>
-                        <span className="text-brown-400 text-body-sm">{comment.date}</span>
-                      </div>
-                      <p className="text-brown-600 text-body-md leading-relaxed">{comment.content}</p>
-                    </div>
-                  </div>
+              <div className="space-y-6">
+                {comments.map((commentItem) => (
+                  <CommentCard
+                    key={commentItem.id}
+                    userProfile={{
+                      name: commentItem.author,
+                      avatar: commentItem.avatar,
+                      avatarAlt: commentItem.author
+                    }}
+                    comment={{
+                      id: commentItem.id.toString(),
+                      text: commentItem.content,
+                      createdAt: commentItem.date
+                    }}
+                  />
                 ))}
               </div>
             </section>
@@ -316,6 +320,18 @@ const ArticleDetail: React.FC = () => {
         isOpen={showLoginDialog} 
         onClose={() => setShowLoginDialog(false)} 
       />
+
+      {/* Copy Link Alert */}
+      {showCopyAlert && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Alert
+            variant="success"
+            title="Copied!"
+            message="This article has been copied to your clipboard."
+            onClose={() => setShowCopyAlert(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
