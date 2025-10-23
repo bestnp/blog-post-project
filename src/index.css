@@ -6,21 +6,64 @@
 
 @theme {
   --font-sans: "Poppins", sans-serif;
-
-  /* Text sizes */
-  --text-h1: 52px;
-  --text-h2: 40px;
-  --text-h3: 24px;
-  --text-h4: 20px;
-  --text-body-lg: 16px;
-  --text-body-md: 14px;
-  --text-body-sm: 12px;
+  
+  /* Custom font sizes */
+  --font-size-h1: 52px;
+  --font-size-h2: 40px;
+  --font-size-h3: 24px;
+  --font-size-h4: 20px;
+  --font-size-body-lg: 16px;
+  --font-size-body-md: 14px;
+  --font-size-body-sm: 12px;
 }
 
 @import "tailwindcss/utilities";
 
 /* Force Tailwind to include these classes by using them in a comment */
 /* bg-brown-300 text-brown-600 bg-brown-600 text-brown-300 */
+/* text-h1 text-h2 text-h3 text-h4 text-body-lg text-body-md text-body-sm */
+
+/* Textarea Resize Handle Styling */
+.textarea-resize-hint {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Hide native resize handle */
+.textarea-resize-hint textarea::-webkit-resizer {
+  display: none;
+}
+
+/* Custom resize handle - Line 1 (longer, left side) */
+.textarea-resize-hint::before {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 22px;
+  width: 20px;
+  height: 1px;
+  background-color: #DAD6D1;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Custom resize handle - Line 2 (shorter, right side) */
+.textarea-resize-hint::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 18px;
+  width: 12px;
+  height: 1px;
+  background-color: #DAD6D1;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 10;
+}
 
 /* Markdown Content Styles */
 .markdown {

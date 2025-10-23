@@ -8,7 +8,17 @@ import ArticleSection from "./components/ui/ArticleSection";
 import ArticleDetail from './pages/ArticleDetail';
 import SearchResults from './pages/SearchResults';
 import NotFound from './pages/NotFound';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
 import IconTest from './pages/IconTest';
+import ButtonTest from './pages/ButtonTest';
+import TabTest from './pages/TabTest';
+import AlertTest from './pages/AlertTest';
+import InputTest from './pages/InputTest';
+import TextAreaTest from './pages/TextAreaTest';
+import CommentTest from './pages/CommentTest';
+import ColorTest from './pages/ColorTest';
+import FontSizeTest from './pages/FontSizeTest';
 
 function App() {
   return (
@@ -25,7 +35,17 @@ function App() {
         } />
         <Route path="/post/:postId" element={<ArticleDetail />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/icon-test" element={<IconTest />} />
+        <Route path="/button-test" element={<ButtonTest />} />
+        <Route path="/tab-test" element={<TabTest />} />
+        <Route path="/alert-test" element={<AlertTest />} />
+        <Route path="/input-test" element={<InputTest />} />
+        <Route path="/textarea-test" element={<TextAreaTest />} />
+        <Route path="/comment-test" element={<CommentTest />} />
+        <Route path="/color-test" element={<ColorTest />} />
+        <Route path="/fontsize-test" element={<FontSizeTest />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

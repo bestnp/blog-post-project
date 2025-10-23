@@ -1,33 +1,25 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Search, X } from "lucide-react";
 
-type InputState = "default" | "focus" | "error" | "completed" | "disabled";
+type TextAreaState = "default" | "focus" | "completed";
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TextAreaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'disabled'> {
   label?: string;
   helpText?: string;
   errorText?: string;
-  state?: InputState;
-  showSearchIcon?: boolean;
-  showClearButton?: boolean;
-  onClear?: () => void;
+  state?: TextAreaState;
   containerClassName?: string;
   labelClassName?: string;
   helpTextClassName?: string;
 }
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ({ 
     className, 
-    type = "text", 
     label,
     helpText,
     errorText,
     state = "default",
-    showSearchIcon = true,
-    showClearButton = true,
-    onClear,
     containerClassName,
     labelClassName,
     helpTextClassName,
@@ -35,26 +27,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ...props 
   }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
+    const [textareaValue, setTextareaValue] = useState(value || "");
     
-    const isDisabled = state === "disabled" || props.disabled;
-    const isError = state === "error";
+    const isError = !!errorText;
     const isCompleted = state === "completed";
     const isFocusedState = state === "focus" || (isFocused && state === "default");
     
-    const handleClear = () => {
-      onClear?.();
-    };
-
-    const getInputStyles = () => {
-      const baseStyles = "h-10 w-full rounded-md border bg-white px-3 py-2 text-current outline-none transition-colors";
-      
-      if (isDisabled) {
-        return cn(
-          baseStyles,
-          "border-0 bg-brown-200 text-brown-400 placeholder:text-brown-400/40",
-          "cursor-not-allowed"
-        );
-      }
+    const getTextAreaStyles = () => {
+      const baseStyles = "min-h-[100px] w-full rounded-[8px] border bg-white px-5 py-4 pb-8 pr-8 text-current outline-none transition-colors resize-y";
       
       if (isError) {
         return cn(
@@ -89,9 +69,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const getLabelStyles = () => {
-      if (isDisabled) {
-        return "text-brown-400/40";
-      }
       return "text-brown-400";
     };
 
@@ -99,14 +76,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       if (isError) {
         return "text-red";
       }
-      if (isDisabled) {
-        return "text-brown-400/40";
-      }
-      return "text-brown-400";
-    };
-
-    const getIconColor = () => {
-      if (isDisabled) return "text-brown-400/40";
       return "text-brown-400";
     };
 
@@ -118,42 +87,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         
-        <div className="relative">
-          <input
+        <div className="textarea-resize-hint">
+          <textarea
             ref={ref}
-            type={type}
-            value={value}
+            value={textareaValue}
+            onChange={(e) => setTextareaValue(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            disabled={isDisabled}
             className={cn(
-              getInputStyles(),
-              showSearchIcon && "pr-10",
-              showClearButton && value && "pr-10",
+              getTextAreaStyles(),
               className
             )}
             {...props}
           />
-          
-          {showSearchIcon && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Search className={cn("h-4 w-4", getIconColor())} />
-            </div>
-          )}
-          
-          {showClearButton && value && !isDisabled && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className={cn(
-                "absolute right-3 top-1/2 transform -translate-y-1/2",
-                "hover:bg-gray-100 rounded-sm p-1 transition-colors",
-                "focus:outline-none focus:ring-2 focus:ring-gray-200"
-              )}
-            >
-              <X className={cn("h-4 w-4", getIconColor())} />
-            </button>
-          )}
         </div>
         
         {(helpText || errorText) && (
@@ -166,7 +112,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = "Input";
+TextArea.displayName = "TextArea";
 
-export default Input;
-
+export default TextArea;

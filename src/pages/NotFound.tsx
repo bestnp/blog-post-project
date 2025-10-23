@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '@/components/ui/NavBar';
 import Footer from '@/components/ui/Footer';
+import { Button } from '@/components/ui/Button';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -30,12 +31,14 @@ const NotFound: React.FC = () => {
           </h1>
 
           {/* Go To Homepage Button */}
-          <button
+          <Button
             onClick={handleGoHome}
-            className="px-8 py-3 bg-brown-600 text-white rounded-full hover:bg-brown-700 transition-colors text-body-lg font-medium"
+            variant="default"
+            size="lg"
+            className="!text-white"
           >
             Go To Homepage
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { blogApi, ApiResponse, BlogPost } from '@/services/api';
 import { SearchLight } from '@/icon/IconsAll';
 import NavBar from '@/components/ui/NavBar';
 import Footer from '@/components/ui/Footer';
+import { Button } from '@/components/ui/Button';
 
 const SearchResults: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -152,37 +153,36 @@ const SearchResults: React.FC = () => {
             {/* Pagination */}
             {searchResults.totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mb-8">
-                <button
+                <Button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 border border-brown-300 rounded-lg text-brown-600 hover:bg-brown-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="outline"
+                  size="default"
                 >
                   Previous
-                </button>
+                </Button>
                 
                 <div className="flex gap-1">
                   {Array.from({ length: searchResults.totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
+                    <Button
                       key={page}
                       onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        page === currentPage
-                          ? 'bg-brown-600 text-white'
-                          : 'text-brown-600 hover:bg-brown-50'
-                      }`}
+                      variant={page === currentPage ? "default" : "ghost"}
+                      size="sm"
                     >
                       {page}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 
-                <button
+                <Button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === searchResults.totalPages}
-                  className="px-4 py-2 border border-brown-300 rounded-lg text-brown-600 hover:bg-brown-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="outline"
+                  size="default"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </>
