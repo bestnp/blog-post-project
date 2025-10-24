@@ -32,13 +32,13 @@ const Login: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-[480px] bg-brown-200 rounded-[16px] px-8 py-10">
-          <h2 className="text-h2 font-bold text-center mb-8">Log in</h2>
+        <div className="w-full max-w-[798px] bg-brown-200 rounded-[16px] px-[120px] py-[60px]">
+          <h2 className="text-h2 font-medium text-center mb-8">Log in</h2>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
-              <label htmlFor="email" className="text-body-md font-medium text-brown-600">
+              <label htmlFor="email" className="text-body-lg text-brown-400">
                 Email
               </label>
               <Input
@@ -48,14 +48,14 @@ const Login: React.FC = () => {
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="h-[48px]"
+                className="h-[48px] px-[16px]"
                 showSearchIcon={false}
               />
             </div>
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="text-body-md font-medium text-brown-600">
+              <label htmlFor="password" className="text-body-lg text-brown-400">
                 Password
               </label>
               <Input
@@ -65,28 +65,30 @@ const Login: React.FC = () => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className="h-[48px]"
+                className="h-[48px] px-[16px]"
                 showSearchIcon={false}
               />
             </div>
 
             {/* Login Button */}
-            <Button
-              type="submit"
-              variant="default"
-              size="lg"
-              className="w-full !text-white"
-            >
-              Log in
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                type="submit"
+                variant="default"
+                size="lg"
+                className="px-[40px] py-[12px] !text-white !bg-brown-600"
+              >
+                Log in
+              </Button>
+            </div>
           </form>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
-            <span className="text-body-md text-brown-600">Don't have any account? </span>
+            <span className="text-body-md text-brown-400">Don't have any account? </span>
             <button
               onClick={() => navigate('/signup')}
-              className="text-body-md text-brown-600 underline hover:no-underline"
+              className="text-body-md text-brown-600 underline hover:no-underline ml-[6px]"
             >
               Sign up
             </button>
