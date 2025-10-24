@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const tabVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-[8px] font-medium cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brown-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[8px] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brown-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
   {
     variants: {
       variant: {
-        default: "text-brown-600 bg-transparent hover:bg-gray-100",
-        active: "bg-brown-300 text-brown-600 shadow hover:bg-brown-300/80",
+        default: "bg-transparent hover:bg-gray-100 text-brown-400",
+        active: "bg-brown-300 shadow hover:bg-brown-300/80 text-brown-500",
       },
     },
     defaultVariants: {

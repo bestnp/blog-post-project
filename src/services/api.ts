@@ -17,6 +17,17 @@ export interface Comment {
   content: string;
 }
 
+export interface Notification {
+  id: string;
+  userName: string;
+  userAvatar: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+  type?: 'comment' | 'like' | 'follow' | 'publish';
+  postId?: number;
+}
+
 export interface BlogPost {
   id: number;
   image: string;
@@ -111,6 +122,57 @@ export const blogApi = {
       return response.data;
     } catch (error) {
       console.error('Error posting comment:', error);
+      throw error;
+    }
+  },
+
+  // ดึงข้อมูล notifications
+  getNotifications: async (): Promise<Notification[]> => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/notifications`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      // Return mock data if API fails (for development)
+      return [
+        {
+          id: '1',
+          userName: 'Thompson P.',
+          userAvatar: 'https://i.pravatar.cc/150?img=33',
+          message: 'Published new article.',
+          timestamp: '2 hours ago',
+          isRead: false,
+          type: 'publish',
+        },
+        {
+          id: '2',
+          userName: 'Jacob Lash',
+          userAvatar: 'https://i.pravatar.cc/150?img=14',
+          message: 'Comment on the article you have read.',
+          timestamp: '4 hours ago',
+          isRead: false,
+          type: 'comment',
+        },
+      ];
+    }
+  },
+
+  // Mark notification as read
+  markNotificationAsRead: async (notificationId: string): Promise<void> => {
+    try {
+      await axios.patch(`${API_BASE_URL}/notifications/${notificationId}/read`);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  },
+
+  // Mark all notifications as read
+  markAllNotificationsAsRead: async (): Promise<void> => {
+    try {
+      await axios.patch(`${API_BASE_URL}/notifications/read-all`);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
       throw error;
     }
   },

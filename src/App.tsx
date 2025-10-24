@@ -19,6 +19,9 @@ import TextAreaTest from './pages/TextAreaTest';
 import CommentTest from './pages/CommentTest';
 import ColorTest from './pages/ColorTest';
 import FontSizeTest from './pages/FontSizeTest';
+import ProfileDropdownTest from './pages/ProfileDropdownTest';
+import NavBarTest from './pages/NavBarTest';
+import NotificationTest from './pages/NotificationTest';
 
 function App() {
   return (
@@ -46,6 +49,9 @@ function App() {
         <Route path="/comment-test" element={<CommentTest />} />
         <Route path="/color-test" element={<ColorTest />} />
         <Route path="/fontsize-test" element={<FontSizeTest />} />
+        <Route path="/profile-dropdown-test" element={<ProfileDropdownTest />} />
+        <Route path="/navbar-test" element={<NavBarTest />} />
+        <Route path="/notification-test" element={<NotificationTest />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

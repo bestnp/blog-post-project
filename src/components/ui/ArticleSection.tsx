@@ -238,7 +238,7 @@ export default function ArticleSection() {
               key={cat}
               isActive={selected === cat}
               onClick={() => setSelected(cat)}
-              className="px-5 py-3 text-body-sm"
+              className="px-5 py-3"
             >
               {cat}
             </Tab>
@@ -254,7 +254,7 @@ export default function ArticleSection() {
             onBlur={handleSearchBlur}
             showSearchIcon={true}
             showClearButton={false}
-            className="rounded-[8px] bg-white text-body-md border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[48px] w-full"
+            className="rounded-[8px] bg-white text-body-lg border-brown-300 focus:ring-brown-200 focus:ring-2 transition h-[48px] w-full"
           />
           
           {/* Desktop Search Dropdown */}
@@ -271,47 +271,52 @@ export default function ArticleSection() {
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && posts.length === 0 && (
-        <div className="mt-8 text-center py-12">
-          <div className="inline-flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
-            <p className="text-brown-600 text-body-lg">Loading...</p>
+      {/* Content Area with min-height to prevent jumping */}
+      <div className="mt-8 min-h-[600px] relative">
+        {/* Loading State */}
+        {loading && posts.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="inline-flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
+              <p className="text-brown-600 text-body-lg">Loading...</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Error State */}
-      {error && (
-        <div className="mt-8 text-center py-12">
-          <p className="text-red-500 text-body-lg mb-4">{error}</p>
-          <Button 
-            onClick={() => fetchPosts(1, selected, searchTerm)}
-            variant="default"
-            size="default"
-          >
-            Try Again
-          </Button>
-        </div>
-      )}
+        {/* Error State */}
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-red-500 text-body-lg mb-4">{error}</p>
+              <Button 
+                onClick={() => fetchPosts(1, selected, searchTerm)}
+                variant="default"
+                size="default"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
 
-      {/* Blog Posts Grid */}
-      {!loading && !error && (
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          {posts.map((post: BlogPost) => (
-            <BlogCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+        {/* Blog Posts Grid */}
+        {!loading && !error && posts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {posts.map((post: BlogPost) => (
+              <BlogCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
 
-      {/* No results message */}
-      {!loading && !error && posts.length === 0 && (
-        <div className="mt-8 text-center py-12">
-          <p className="text-brown-400 text-body-lg">
-            No articles found matching your criteria.
-          </p>
-        </div>
-      )}
+        {/* No results message */}
+        {!loading && !error && posts.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-brown-400 text-body-lg">
+              No articles found matching your criteria.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* View More Button */}
       {!loading && !error && posts.length > 0 && hasNextPage && !loadingMore && (
