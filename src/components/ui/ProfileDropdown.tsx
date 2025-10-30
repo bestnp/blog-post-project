@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserDuotone, SignOutSquareLight, RefreshLight, DoneRoundLight } from '@/icon/IconsAll';
+import { UserDuotone, SignOutSquareLight, RefreshLight, NotebookLight } from '@/icon/IconsAll';
 
 interface ProfileDropdownProps {
   isOpen: boolean;
@@ -15,12 +15,20 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAd
   if (!isOpen) return null;
 
   const handleProfileClick = () => {
-    navigate('/profile');
+    if (isAdmin) {
+      navigate('/admin/profile');
+    } else {
+      navigate('/profile?tab=profile');
+    }
     onClose();
   };
 
   const handleResetPasswordClick = () => {
-    navigate('/profile');
+    if (isAdmin) {
+      navigate('/admin/reset-password');
+    } else {
+      navigate('/profile?tab=reset-password');
+    }
     onClose();
   };
 
@@ -74,7 +82,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAd
               onClick={handleAdminPanelClick}
               className="w-full flex items-center gap-3 px-6 py-4 hover:bg-brown-100 transition-colors text-left"
             >
-              <SignOutSquareLight className="w-6 h-6 text-brown-400" />
+              <NotebookLight className="w-6 h-6 text-brown-400" />
               <span className="text-body-lg text-brown-500">Admin panel</span>
             </button>
           </>
@@ -88,7 +96,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAd
           onClick={handleLogoutClick}
           className="w-full flex items-center gap-3 px-6 py-4 hover:bg-brown-100 transition-colors text-left"
         >
-          <DoneRoundLight className="w-6 h-6 text-brown-400" />
+          <SignOutSquareLight className="w-6 h-6 text-brown-400" />
           <span className="text-body-lg text-brown-500">Log out</span>
         </button>
       </div>
