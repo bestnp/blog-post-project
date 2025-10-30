@@ -35,7 +35,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName = "Admin" }) => {
     {
       label: "Profile",
       icon: UserDuotone,
-      path: "/profile",
+      path: "/admin/profile",
     },
     {
       label: "Notification",

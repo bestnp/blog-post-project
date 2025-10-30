@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import MemberProfile from './pages/MemberProfile';
 import Notification from './pages/Notification';
 import ResetPassword from './pages/ResetPassword';
 import ArticleManagement from './pages/ArticleManagement';
@@ -47,7 +48,8 @@ function App() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<MemberProfile />} />
+        <Route path="/admin/profile" element={<Profile />} />
         <Route path="/admin/notifications" element={<Notification />} />
         <Route path="/admin/reset-password" element={<ResetPassword />} />
         <Route path="/admin/articles" element={<ArticleManagement />} />
