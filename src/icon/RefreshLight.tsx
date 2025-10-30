@@ -1,20 +1,37 @@
 import React from "react";
 
-const RefreshLight = ({ width = 24, height = 24, color = "currentColor", className, ...props }: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    {...props}
-  >
-    <path d="M4 12C4 7.58172 7.58172 4 12 4V4C16.4183 4 20 7.58172 20 12V17.0909C20 17.9375 20 18.3608 19.8739 18.6989C19.6712 19.2425 19.2425 19.6712 18.6989 19.8739C18.3608 20 17.9375 20 17.0909 20H12C7.58172 20 4 16.4183 4 12V12Z" stroke="currentColor"/>
-    <path d="M9 11L15 11" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 15H15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+interface IconProps {
+  width?: number | string;
+  height?: number | string;
+  currentColor?: string;
+  className?: string;
+}
+
+const RefreshLight: React.FC<IconProps & React.SVGProps<SVGSVGElement>> = ({
+  width = 24,
+  height = 24,
+  currentColor = "currentColor",
+  className,
+  ...props
+}) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
+    >
+      <path d="M14 15L10 19L14 23" stroke={currentColor} />
+      <path
+        d="M5.93782 15.5C5.14475 14.1264 4.84171 12.5241 5.07833 10.9557C5.31495 9.38734 6.07722 7.94581 7.24024 6.86729C8.40327 5.78877 9.8981 5.13721 11.4798 5.01935C13.0616 4.90149 14.6365 5.32432 15.9465 6.21856C17.2565 7.1128 18.224 8.42544 18.6905 9.94144C19.1569 11.4574 19.0947 13.0869 18.5139 14.5629C17.9332 16.0389 16.8684 17.2739 15.494 18.0656C14.1196 18.8573 12.517 19.1588 10.9489 18.9206"
+        stroke={currentColor}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
 
 export default RefreshLight;
-

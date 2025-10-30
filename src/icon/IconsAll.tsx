@@ -11,6 +11,7 @@ export { default as BellLight } from "@/icon/BellLight";
 export { default as ChatLight } from "@/icon/ChatLight";
 export { default as CloseRoundLight } from "@/icon/CloseRoundLight";
 export { default as CopyLight } from "@/icon/CopyLight";
+export { default as DateTodayLight } from "@/icon/DateTodayLight";
 export { default as DoneRoundLight } from "@/icon/DoneRoundLight";
 export { default as EditLight } from "@/icon/EditLight";
 export { default as ExpandDownLight } from "@/icon/ExpandDownLight";

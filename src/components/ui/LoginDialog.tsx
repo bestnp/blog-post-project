@@ -1,7 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { CloseRoundLight } from '@/icon/IconsAll';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import Modal from "./Modal";
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -11,65 +10,47 @@ interface LoginDialogProps {
 const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
-  if (!isOpen) return null;
-
   const handleCreateAccount = () => {
-    navigate('/signup');
+    navigate("/signup");
     onClose();
   };
 
   const handleLogin = () => {
-    navigate('/login');
+    navigate("/login");
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div 
-        className="absolute inset-0 bg-brown-600 opacity-50"
-        onClick={onClose}
-      ></div>
-      
-      {/* Dialog */}
-      <div className="relative bg-white rounded-2xl p-[40px] max-w-xl w-full mx-4 shadow-2xl">
-        {/* Close Button */}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create an account to continue"
+      width="600px"
+    >
+      <div className="flex flex-col items-center mt-4">
+        {/* Create Account Button */}
         <button
-          onClick={onClose}
-          className="absolute top-[16px] right-[24px] text-brown-400 hover:text-brown-600 transition-colors"
+          onClick={handleCreateAccount}
+          className="w-full max-w-[380px] h-[48px] bg-brown-600 hover:bg-brown-500 text-white rounded-lg text-body-lg font-semibold transition-colors mb-6"
         >
-          <CloseRoundLight className="w-[24px] h-[24px]" />
+          Create account
         </button>
 
-        {/* Content */}
+        {/* Login Link */}
         <div className="text-center">
-          <h2 className="text-h2 font-bold text-brown-600 mt-[24px]">
-            Create an account to continue
-          </h2>
-          
-          <Button
-            variant="default"
-            size="lg"
-            onClick={handleCreateAccount}
-            className="mx-auto !text-white my-[40px]"
+          <span className="text-body-lg text-brown-400">
+            Already have an account?{" "}
+          </span>
+          <button
+            onClick={handleLogin}
+            className="text-body-lg text-brown-600 underline hover:no-underline font-medium"
           >
-            Create account
-          </Button>
-          
-          <p className="text-brown-400 text-body-lg">
-            Already have an account?{' '}
-            <button 
-              onClick={handleLogin}
-              className="ml-[12px] text-body-lg text-brown-600 font-semibold underline hover:text-brown-700 transition-colors"
-            >
-              Log in
-            </button>
-          </p>
+            Log in
+          </button>
         </div>
-      </div>    
-    </div>
+      </div>
+    </Modal>
   );
 };
 
 export default LoginDialog;
-

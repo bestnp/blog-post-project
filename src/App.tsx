@@ -10,6 +10,13 @@ import SearchResults from './pages/SearchResults';
 import NotFound from './pages/NotFound';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
+import Profile from './pages/Profile';
+import Notification from './pages/Notification';
+import ResetPassword from './pages/ResetPassword';
+import ArticleManagement from './pages/ArticleManagement';
+import CreateArticle from './pages/CreateArticle';
+import EditArticle from './pages/EditArticle';
+import CategoryManagement from './pages/CategoryManagement';
 import IconTest from './pages/IconTest';
 import ButtonTest from './pages/ButtonTest';
 import TabTest from './pages/TabTest';
@@ -40,6 +47,13 @@ function App() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin/notifications" element={<Notification />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
+        <Route path="/admin/articles" element={<ArticleManagement />} />
+        <Route path="/admin/articles/create" element={<CreateArticle />} />
+        <Route path="/admin/articles/edit/:id" element={<EditArticle />} />
+        <Route path="/admin/categories" element={<CategoryManagement />} />
         <Route path="/icon-test" element={<IconTest />} />
         <Route path="/button-test" element={<ButtonTest />} />
         <Route path="/tab-test" element={<TabTest />} />

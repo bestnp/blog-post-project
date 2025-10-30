@@ -1,14 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserDuotone, SignOutSquareLight, OutLight } from '@/icon/IconsAll';
+import { UserDuotone, SignOutSquareLight, RefreshLight, DoneRoundLight } from '@/icon/IconsAll';
 
 interface ProfileDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   anchorEl?: HTMLElement | null;
+  isAdmin?: boolean;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAdmin = false }) => {
   const navigate = useNavigate();
 
   if (!isOpen) return null;
@@ -19,13 +20,19 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose }) =>
   };
 
   const handleResetPasswordClick = () => {
-    navigate('/reset-password');
+    navigate('/profile');
+    onClose();
+  };
+
+  const handleAdminPanelClick = () => {
+    navigate('/admin/articles');
     onClose();
   };
 
   const handleLogoutClick = () => {
     // Handle logout logic here
     console.log('Logging out...');
+    navigate('/login');
     onClose();
   };
 
@@ -48,17 +55,30 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose }) =>
           <span className="text-body-lg text-brown-500">Profile</span>
         </button>
 
-        {/* Divider */}
-        <div className="h-[1px] bg-brown-300"></div>
+
 
         {/* Reset Password */}
         <button
           onClick={handleResetPasswordClick}
           className="w-full flex items-center gap-3 px-6 py-4 hover:bg-brown-100 transition-colors text-left"
         >
-        <OutLight className="w-6 h-6 text-brown-400" />
+        <RefreshLight className="w-6 h-6 text-brown-400" />
           <span className="text-body-lg text-brown-500">Reset password</span>
         </button>
+
+        {/* Admin Panel - Only show for admin users */}
+        {isAdmin && (
+          <>
+
+            <button
+              onClick={handleAdminPanelClick}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-brown-100 transition-colors text-left"
+            >
+              <SignOutSquareLight className="w-6 h-6 text-brown-400" />
+              <span className="text-body-lg text-brown-500">Admin panel</span>
+            </button>
+          </>
+        )}
 
         {/* Divider */}
         <div className="h-[1px] bg-brown-300"></div>
@@ -68,7 +88,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose }) =>
           onClick={handleLogoutClick}
           className="w-full flex items-center gap-3 px-6 py-4 hover:bg-brown-100 transition-colors text-left"
         >
-          <SignOutSquareLight className="w-6 h-6 text-brown-400" />
+          <DoneRoundLight className="w-6 h-6 text-brown-400" />
           <span className="text-body-lg text-brown-500">Log out</span>
         </button>
       </div>

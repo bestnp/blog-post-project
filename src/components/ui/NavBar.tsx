@@ -11,13 +11,15 @@ interface NavBarProps {
   userName?: string;
   userAvatar?: string;
   notifications?: NotificationData[];
+  isAdmin?: boolean;
 }
 
 const NavBar: React.FC<NavBarProps> = ({ 
   isLoggedIn = false, 
   userName = "Moodeng ja",
   userAvatar = "https://via.placeholder.com/40",
-  notifications = []
+  notifications = [],
+  isAdmin = false
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -114,6 +116,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 <ProfileDropdown
                   isOpen={isProfileDropdownOpen}
                   onClose={() => setIsProfileDropdownOpen(false)}
+                  isAdmin={isAdmin}
                 />
               </div>
             </div>

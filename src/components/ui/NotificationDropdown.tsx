@@ -45,10 +45,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
       {/* Dropdown Menu */}
       <div className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-[12px] shadow-lg border border-brown-300 overflow-hidden z-50 max-h-[600px] flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-brown-300">
-          <h3 className="text-h4 font-bold text-brown-600">Notifications</h3>
-        </div>
 
         {/* Notification List */}
         <div className="overflow-y-auto flex-1">

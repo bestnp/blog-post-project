@@ -1,20 +1,36 @@
 import React from "react";
 
-const NotebookLight = ({ width = 24, height = 24, color = "currentColor", className, ...props }: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    {...props}
-  >
-    <path d="M4 12C4 7.58172 7.58172 4 12 4V4C16.4183 4 20 7.58172 20 12V17.0909C20 17.9375 20 18.3608 19.8739 18.6989C19.6712 19.2425 19.2425 19.6712 18.6989 19.8739C18.3608 20 17.9375 20 17.0909 20H12C7.58172 20 4 16.4183 4 12V12Z" stroke="currentColor"/>
-    <path d="M9 11L15 11" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 15H15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+interface IconProps {
+  width?: number | string;
+  height?: number | string;
+  currentColor?: string;
+  className?: string;
+}
+
+const NotebookLight: React.FC<IconProps & React.SVGProps<SVGSVGElement>> = ({
+  width = 24,
+  height = 24,
+  currentColor = "currentColor",
+  className,
+  ...props
+}) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
+    >
+      <rect x="6" y="4" width="13" height="17" rx="2" stroke={currentColor} />
+      <path d="M15 10V8" stroke={currentColor} strokeLinecap="round" />
+      <path d="M4 9H8" stroke={currentColor} strokeLinecap="round" />
+      <path d="M4 13H8" stroke={currentColor} strokeLinecap="round" />
+      <path d="M4 17H8" stroke={currentColor} strokeLinecap="round" />
+    </svg>
+  );
+};
 
 export default NotebookLight;
-
