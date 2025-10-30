@@ -5,6 +5,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 const NavBarTest: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Use notifications hook
   const { notifications, loading, error, unreadCount } = useNotifications(isLoggedIn);
@@ -17,6 +18,7 @@ const NavBarTest: React.FC = () => {
         userName="Moodeng ja"
         userAvatar="https://i.pravatar.cc/150?img=12"
         notifications={notifications}
+        isAdmin={isAdmin}
       />
 
       {/* Content */}
@@ -37,6 +39,20 @@ const NavBarTest: React.FC = () => {
               </Button>
               <span className="text-body-lg text-brown-600">
                 Current State: <strong>{isLoggedIn ? 'Logged In' : 'Not Logged In'}</strong>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setIsAdmin(!isAdmin)}
+                variant="secondary"
+                size="lg"
+                disabled={!isLoggedIn}
+              >
+                Toggle Admin Role
+              </Button>
+              <span className="text-body-lg text-brown-600">
+                Admin Role: <strong>{isAdmin ? 'Admin' : 'Regular User'}</strong>
               </span>
             </div>
 
@@ -74,6 +90,7 @@ const NavBarTest: React.FC = () => {
                 <li>• Shows dropdown arrow icon</li>
                 <li>• Click profile to open profile dropdown menu</li>
                 <li>• Profile dropdown has: Profile, Reset password, Log out</li>
+                <li>• If Admin: Shows "Admin panel" option in dropdown</li>
                 <li>• Mobile: Shows profile info in hamburger menu</li>
               </ul>
             </div>
@@ -87,6 +104,7 @@ const NavBarTest: React.FC = () => {
                 <li>✅ Notification bell with badge (shows count of unread)</li>
                 <li>✅ Notification dropdown (integrated!)</li>
                 <li>✅ Profile dropdown menu (Profile, Reset password, Log out)</li>
+                <li>✅ Admin panel option (only visible for admin users)</li>
                 <li>✅ Hover effects on all interactive elements</li>
                 <li>✅ Badge only shows when there are unread notifications</li>
               </ul>

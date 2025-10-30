@@ -1,18 +1,39 @@
 import React from "react";
 
-const EditLight = ({ width = 24, height = 24, color = "currentColor", className, ...props }: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    {...props}
-  >
-    <path d="M3 6C3 5.05719 3 4.58579 3.29289 4.29289C3.58579 4 4.05719 4 5 4H8.64593C9.30174 4 9.62965 4 9.8836 4.17193C10.1375 4.34387 10.2593 4.64832 10.5029 5.25722L10.9029 6.25722C11.4 7.49991 11.6485 8.12126 11.351 8.56063C11.0536 9 10.3844 9 9.04593 9H6.5H17C18.8856 9 19.8284 9 20.4142 9.58579C21 10.1716 21 11.1144 21 13V16C21 17.8856 21 18.8284 20.4142 19.4142C19.8284 20 18.8856 20 17 20H7C5.11438 20 4.17157 20 3.58579 19.4142C3 18.8284 3 17.8856 3 16V6Z" stroke="currentColor" strokeLinejoin="round"/>
-  </svg>
-);
+interface IconProps {
+  width?: number | string;
+  height?: number | string;
+  currentColor?: string;
+  className?: string;
+}
+
+const EditLight: React.FC<IconProps & React.SVGProps<SVGSVGElement>> = ({
+  width = 24,
+  height = 24,
+  currentColor = "currentColor",
+  className,
+  ...props
+}) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
+    >
+      <path
+        d="M15 5.91406C15.3604 5.91406 15.6531 6.066 15.916 6.2666C16.1673 6.45837 16.4444 6.73733 16.7676 7.06055L16.9395 7.23242C17.2627 7.55564 17.5416 7.83268 17.7334 8.08398C17.934 8.3469 18.0859 8.63961 18.0859 9C18.0859 9.36038 17.934 9.6531 17.7334 9.91602C17.5416 10.1673 17.2627 10.4444 16.9395 10.7676L9.74512 17.9619C9.56928 18.1377 9.4185 18.2942 9.22754 18.4023C9.03664 18.5104 8.82512 18.5589 8.58398 18.6191L5.92969 19.2832C5.7655 19.3242 5.587 19.3702 5.43848 19.3848C5.28375 19.3999 5.02289 19.3959 4.81348 19.1865C4.60407 18.9771 4.6001 18.7163 4.61523 18.5615C4.62976 18.413 4.67575 18.2345 4.7168 18.0703L5.38086 15.416C5.44114 15.1749 5.48962 14.9634 5.59766 14.7725C5.70578 14.5815 5.86225 14.4307 6.03809 14.2549L13.2324 7.06055C13.5556 6.73733 13.8327 6.45837 14.084 6.2666C14.3469 6.066 14.6396 5.91406 15 5.91406Z"
+        stroke={currentColor}
+      />
+      <path
+        d="M12.5 7.5L15.5 5.5L18.5 8.5L16.5 11.5L12.5 7.5Z"
+        fill={currentColor}
+      />
+    </svg>
+  );
+};
 
 export default EditLight;
-

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import { Tab, TabGroup } from "@/components/ui/Tab";
 import { Button } from "@/components/ui/Button";
-import { SearchLight } from "@/icon/IconsAll";
+import { SearchLight, ExpandDownLight } from "@/icon/IconsAll";
 import BlogCard from "@/components/ui/BlogCard";
 import SearchDropdown from "@/components/ui/SearchDropdown";
 import { blogApi, BlogPost, formatDate } from "@/services/api";
@@ -221,9 +221,7 @@ export default function ArticleSection() {
               ))}
             </select>
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <svg className="w-4 h-4 text-brown-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ExpandDownLight className="w-4 h-4 text-brown-400" />
             </div>
           </div>
         </div>
