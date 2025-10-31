@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import NavBar from '@/components/ui/NavBar';
+import { useAuth } from '@/context/authentication';
+import { toast } from 'sonner';
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
+  const { register, state } = useAuth();
   const [formData, setFormData] = useState({
     fullName: '',
     username: '',
@@ -21,10 +24,25 @@ const SignUp: React.FC = () => {
     }));
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign up logic here
-    console.log('Sign up data:', formData);
+    if (!formData.fullName || !formData.username || !formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    const result = await register({
+      fullName: formData.fullName,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success('Registration successful!');
+    }
   };
 
   return (
@@ -106,6 +124,13 @@ const SignUp: React.FC = () => {
               />
             </div>
 
+            {/* Error Message */}
+            {state.error && (
+              <div className="text-red-600 text-center text-body-md">
+                {state.error}
+              </div>
+            )}
+
             {/* Sign Up Button */}
             <div className="flex justify-center">
               <Button
@@ -113,8 +138,9 @@ const SignUp: React.FC = () => {
                 variant="default"
                 size="lg"
                 className="px-[40px] py-[12px] !text-white !bg-brown-600"
+                disabled={state.loading === true}
               >
-                Sign up
+                {state.loading ? 'Signing up...' : 'Sign up'}
               </Button>
             </div>
           </form>

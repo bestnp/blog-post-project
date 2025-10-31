@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { ImgBoxLight } from "@/icon/IconsAll";
+import { blogApi } from "@/services/api";
 
 interface ArticleData {
   thumbnailImage: File | null;
@@ -28,6 +30,7 @@ const CreateArticle: React.FC = () => {
 
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{
     title: string;
     message: string;
@@ -49,121 +52,124 @@ const CreateArticle: React.FC = () => {
 
   const handleThumbnailUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setArticleData((prev) => ({
-        ...prev,
-        thumbnailImage: file,
-      }));
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
+    }
+
+    // ตรวจสอบประเภทของไฟล์
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+      return;
+    }
+
+    // ตรวจสอบขนาดของไฟล์ (เช่น ขนาดไม่เกิน 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error("The file is too large. Please upload an image smaller than 5MB.");
+      return;
+    }
+
+    // เก็บข้อมูลไฟล์
+    setArticleData((prev) => ({
+      ...prev,
+      thumbnailImage: file,
+    }));
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setThumbnailPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = async (statusId: number) => {
+    // Validate required fields
+    if (!articleData.title.trim()) {
+      toast.error("Please enter article title");
+      return;
+    }
+    if (!articleData.category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (statusId === 2 && !articleData.introduction.trim()) {
+      toast.error("Please enter introduction for published articles");
+      return;
+    }
+    if (statusId === 2 && !articleData.content.trim()) {
+      toast.error("Please enter content for published articles");
+      return;
+    }
+
+    // Validate image file
+    if (!articleData.thumbnailImage) {
+      toast.error("Please select an image file.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
+      const formData = new FormData();
+
+      // เพิ่มข้อมูลทั้งหมดลงใน FormData
+      formData.append("title", articleData.title);
+      formData.append("category", articleData.category);
+      formData.append("description", articleData.introduction || "");
+      formData.append("content", articleData.content || "");
+      formData.append("status_id", statusId.toString());
+      formData.append("imageFile", articleData.thumbnailImage);
+
+      // ส่งข้อมูลไปยัง Backend (JWT interceptor จะเพิ่ม Authorization header อัตโนมัติ)
+      await blogApi.createPost(formData);
+
+      // Show success message
+      if (statusId === 1) {
+        setAlertConfig({
+          title: "Create article and saved as draft",
+          message: "You can publish article later",
+          variant: "success",
+        });
+      } else {
+        setAlertConfig({
+          title: "Article published successfully!",
+          message: "Your article is now live and visible to readers",
+          variant: "success",
+        });
+      }
+      setShowAlert(true);
+      toast.success(statusId === 1 ? "Article saved as draft!" : "Article published successfully!");
+
+      // Navigate back to article management
+      setTimeout(() => {
+        navigate("/admin/articles");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error creating post:", error);
+      const errorMessage = error.response?.data?.error || error.message || "Failed to create post. Please try again.";
+      toast.error(errorMessage);
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSaveAsDraft = () => {
-    // Validate required fields
-    if (!articleData.title.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter article title",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.category) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please select a category",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-
-    // Save as draft
-    console.log("Saving as draft:", articleData);
-    
-    // TODO: Send data to API
-    // For now, just show success message and navigate back
-    setAlertConfig({
-      title: "Create article and saved as draft",
-      message: "You can publish article later",
-      variant: "success",
-    });
-    setShowAlert(true);
-    
-    // Navigate back to article management
-    setTimeout(() => {
-      navigate("/admin/articles");
-    }, 2000);
+    handleSave(1); // status_id = 1 for draft
   };
 
   const handleSaveAndPublish = () => {
-    // Validate required fields
-    if (!articleData.title.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter article title",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.category) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please select a category",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.introduction.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter introduction",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.content.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter content",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-
-    // Save and publish
-    console.log("Saving and publishing:", articleData);
-    
-    // TODO: Send data to API
-    // For now, just show success message and navigate back
-    setAlertConfig({
-      title: "Article published successfully!",
-      message: "Your article is now live and visible to readers",
-      variant: "success",
-    });
-    setShowAlert(true);
-    
-    // Navigate back to article management
-    setTimeout(() => {
-      navigate("/admin/articles");
-    }, 2000);
+    handleSave(2); // status_id = 2 for published
   };
 
   return (
@@ -182,16 +188,18 @@ const CreateArticle: React.FC = () => {
                 onClick={handleSaveAsDraft}
                 variant="secondary"
                 size="default"
+                disabled={isLoading}
               >
-                Save as draft
+                {isLoading ? "Saving..." : "Save as draft"}
               </Button>
               <Button
                 onClick={handleSaveAndPublish}
                 variant="default"
                 size="default"
                 className="!bg-brown-600 hover:!bg-brown-500"
+                disabled={isLoading}
               >
-                Save and publish
+                {isLoading ? "Publishing..." : "Save and publish"}
               </Button>
             </div>
           </div>

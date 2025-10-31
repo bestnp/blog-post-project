@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import NavBar from '@/components/ui/NavBar';
+import { useAuth } from '@/context/authentication';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login, state } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -19,10 +22,23 @@ const Login: React.FC = () => {
     }));
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login data:', formData);
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    const result = await login({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success('Login successful!');
+    }
   };
 
   return (
@@ -70,6 +86,13 @@ const Login: React.FC = () => {
               />
             </div>
 
+            {/* Error Message */}
+            {state.error && (
+              <div className="text-red-600 text-center text-body-md">
+                {state.error}
+              </div>
+            )}
+
             {/* Login Button */}
             <div className="flex justify-center">
               <Button
@@ -77,8 +100,9 @@ const Login: React.FC = () => {
                 variant="default"
                 size="lg"
                 className="px-[40px] py-[12px] !text-white !bg-brown-600"
+                disabled={state.loading === true}
               >
-                Log in
+                {state.loading ? 'Logging in...' : 'Log in'}
               </Button>
             </div>
           </form>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserDuotone, SignOutSquareLight, RefreshLight, NotebookLight } from '@/icon/IconsAll';
+import { useAuth } from '@/context/authentication';
 
 interface ProfileDropdownProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ProfileDropdownProps {
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAdmin = false }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   if (!isOpen) return null;
 
@@ -38,9 +40,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAd
   };
 
   const handleLogoutClick = () => {
-    // Handle logout logic here
-    console.log('Logging out...');
-    navigate('/login');
+    logout();
     onClose();
   };
 

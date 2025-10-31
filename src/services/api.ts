@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://blog-post-project-api.vercel.app';
+const API_BASE_URL = 'https://blog-post-project-api-five.vercel.app';
 
 export interface Author {
   id: number;
@@ -173,6 +173,36 @@ export const blogApi = {
       await axios.patch(`${API_BASE_URL}/notifications/read-all`);
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+      throw error;
+    }
+  },
+
+  // สร้างบทความใหม่
+  createPost: async (formData: FormData): Promise<BlogPost> => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/posts`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating post:', error);
+      throw error;
+    }
+  },
+
+  // อัพเดทบทความ
+  updatePost: async (id: number, formData: FormData): Promise<BlogPost> => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/posts/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating post:', error);
       throw error;
     }
   },

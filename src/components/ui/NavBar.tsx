@@ -5,26 +5,26 @@ import { Button } from "@/components/ui/Button";
 import ProfileDropdown from "./ProfileDropdown";
 import NotificationDropdown from "./NotificationDropdown";
 import { NotificationData } from "./NotificationCard";
+import { useAuth } from "@/context/authentication";
 
 interface NavBarProps {
-  isLoggedIn?: boolean;
-  userName?: string;
-  userAvatar?: string;
   notifications?: NotificationData[];
   isAdmin?: boolean;
 }
 
 const NavBar: React.FC<NavBarProps> = ({ 
-  isLoggedIn = false, 
-  userName = "Moodeng ja",
-  userAvatar = "https://via.placeholder.com/40",
   notifications = [],
   isAdmin = false
 }) => {
+  const { isAuthenticated, state } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Get user info from auth state
+  const userName = state.user?.name || state.user?.username || "User";
+  const userAvatar = state.user?.avatar || "https://via.placeholder.com/40";
 
   const handleLogoClick = () => {
     navigate('/');
@@ -51,7 +51,7 @@ const NavBar: React.FC<NavBarProps> = ({
           </button>
           
           {/* Desktop Menu */}
-          {!isLoggedIn ? (
+          {!isAuthenticated ? (
             <div className="hidden md:flex space-x-2">
               <Button 
                 onClick={handleLoginClick}
@@ -136,7 +136,7 @@ const NavBar: React.FC<NavBarProps> = ({
         {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-brown-300 bg-white px-4 py-4 space-y-3">
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
               <>
                 <Button 
                   onClick={handleLoginClick}

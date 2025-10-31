@@ -12,16 +12,17 @@ import { Button } from '@/components/ui/Button';
 import TextArea from '@/components/ui/TextArea';
 import CommentCard from '@/components/ui/CommentCard';
 import { Alert } from '@/components/ui/Alert';
+import { useAuth } from '@/context/authentication';
 
 const ArticleDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [author, setAuthor] = useState<Author | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Login state
   const [showLoginDialog, setShowLoginDialog] = useState(false); // Login dialog state
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -86,7 +87,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   const handleLikeClick = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
     }
@@ -95,7 +96,7 @@ const ArticleDetail: React.FC = () => {
   };
 
   const handleSendComment = async () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
     }

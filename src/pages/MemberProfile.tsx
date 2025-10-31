@@ -113,9 +113,6 @@ const MemberProfile: React.FC = () => {
     <div className="min-h-screen bg-brown-50">
       {/* NavBar */}
       <NavBar 
-        isLoggedIn={true}
-        userName={profileData.name}
-        userAvatar={profileData.avatar}
         notifications={[]}
         isAdmin={false}
       />
