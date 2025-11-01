@@ -1,41 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import { Button } from "@/components/ui/Button";
-
-interface NotificationItem {
-  id: number;
-  type: "comment" | "like";
-  userName: string;
-  userAvatar: string;
-  articleTitle: string;
-  commentText?: string;
-  time: string;
-}
+import { blogApi, Notification as NotificationType } from "@/services/api";
 
 const Notification: React.FC = () => {
-  const [notifications] = useState<NotificationItem[]>([
-    {
-      id: 1,
-      type: "comment",
-      userName: "Jacob Lash",
-      userAvatar: "https://i.pravatar.cc/150?img=12",
-      articleTitle: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-      commentText: "I loved this article! It really explains why my cat is so independent yet loving. The purring section was super interesting.",
-      time: "4 hours ago",
-    },
-    {
-      id: 2,
-      type: "like",
-      userName: "Jacob Lash",
-      userAvatar: "https://i.pravatar.cc/150?img=12",
-      articleTitle: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-      time: "6 hours ago",
-    },
-  ]);
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleView = (id: number) => {
-    console.log("View notification:", id);
-    // TODO: Navigate to article or comment
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const data = await blogApi.getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleView = (notification: NotificationType) => {
+    if (notification.postId) {
+      navigate(`/post/${notification.postId}`);
+    }
   };
 
   return (
@@ -54,7 +47,11 @@ const Notification: React.FC = () => {
 
           {/* Notifications List */}
           <div className="divide-y divide-brown-200">
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="p-8 text-center text-brown-400">
+                Loading notifications...
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-brown-400">
                 No notifications yet
               </div>
@@ -78,42 +75,28 @@ const Notification: React.FC = () => {
                         <span className="text-body-md font-semibold text-brown-600">
                           {notification.userName}
                         </span>
-                        {notification.type === "comment" ? (
-                          <span className="text-body-md text-brown-600">
-                            {" "}Commented on your article:{" "}
-                          </span>
-                        ) : (
-                          <span className="text-body-md text-brown-600">
-                            {" "}liked your article:{" "}
-                          </span>
-                        )}
                         <span className="text-body-md text-brown-600">
-                          {notification.articleTitle}
+                          {" "}{notification.message}
                         </span>
                       </div>
 
-                      {/* Comment Text (if exists) */}
-                      {notification.commentText && (
-                        <p className="text-body-md text-brown-400 mb-2">
-                          "{notification.commentText}"
-                        </p>
-                      )}
-
                       {/* Time */}
                       <p className="text-body-sm text-orange-500">
-                        {notification.time}
+                        {notification.timestamp}
                       </p>
                     </div>
 
                     {/* View Button */}
-                    <Button
-                      onClick={() => handleView(notification.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="flex-shrink-0 text-brown-600 hover:text-brown-500"
-                    >
-                      View
-                    </Button>
+                    {notification.postId && (
+                      <Button
+                        onClick={() => handleView(notification)}
+                        variant="ghost"
+                        size="sm"
+                        className="flex-shrink-0 text-brown-600 hover:text-brown-500"
+                      >
+                        View
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))

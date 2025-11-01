@@ -4,6 +4,8 @@ import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { Alert } from "@/components/ui/Alert";
+import { authApi } from "@/services/api";
+import { toast } from "sonner";
 
 interface PasswordData {
   currentPassword: string;
@@ -20,6 +22,7 @@ const ResetPassword: React.FC = () => {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handlePasswordChange = (field: keyof PasswordData, value: string) => {
     setPasswordData(prev => ({
@@ -31,31 +34,52 @@ const ResetPassword: React.FC = () => {
   const handleResetPassword = () => {
     // Validate fields
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
       return;
     }
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      // TODO: Show error
+      toast.error('New password and confirm password do not match');
       return;
     }
 
     setShowConfirmModal(true);
   };
 
-  const handleConfirmReset = () => {
-    console.log("Resetting password:", passwordData);
+  const handleConfirmReset = async () => {
     setShowConfirmModal(false);
-    
-    // Clear password fields
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+    setIsLoading(true);
 
-    // Show success alert
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+    try {
+      // Use PUT /auth/reset-password for changing password when logged in
+      await authApi.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      // Clear password fields
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
+      // Show success alert
+      setShowAlert(true);
+      toast.success('Password updated successfully');
+      setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to reset password';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,9 +98,9 @@ const ResetPassword: React.FC = () => {
               variant="default"
               size="default"
               className="!bg-brown-600 hover:!bg-brown-500 min-w-[160px]"
-              disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+              disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
             >
-              Reset password
+              {isLoading ? 'Resetting...' : 'Reset password'}
             </Button>
           </div>
 

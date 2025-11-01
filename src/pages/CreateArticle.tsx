@@ -41,6 +41,15 @@ const CreateArticle: React.FC = () => {
     variant: "success",
   });
 
+  // Category mapping (hardcoded since backend doesn't have categories endpoint)
+  // TODO: Implement categories endpoint in backend or use database query
+  const categoryMapping: { [key: string]: number } = {
+    "Cat": 1,
+    "General": 2,
+    "Inspiration": 3,
+    "Highlight": 4,
+  };
+  
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
   const handleInputChange = (field: keyof ArticleData, value: string) => {
@@ -112,17 +121,20 @@ const CreateArticle: React.FC = () => {
 
     setIsLoading(true);
 
-    try {
-      // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
-      const formData = new FormData();
+            try {
+              // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
+              const formData = new FormData();
 
-      // เพิ่มข้อมูลทั้งหมดลงใน FormData
-      formData.append("title", articleData.title);
-      formData.append("category", articleData.category);
-      formData.append("description", articleData.introduction || "");
-      formData.append("content", articleData.content || "");
-      formData.append("status_id", statusId.toString());
-      formData.append("imageFile", articleData.thumbnailImage);
+              // Get category_id from category name
+              const categoryId = categoryMapping[articleData.category] || 1;
+
+              // เพิ่มข้อมูลทั้งหมดลงใน FormData (backend expects category_id, not category)
+              formData.append("title", articleData.title);
+              formData.append("category_id", categoryId.toString());
+              formData.append("description", articleData.introduction || "");
+              formData.append("content", articleData.content || "");
+              formData.append("status_id", statusId.toString());
+              formData.append("imageFile", articleData.thumbnailImage);
 
       // ส่งข้อมูลไปยัง Backend (JWT interceptor จะเพิ่ม Authorization header อัตโนมัติ)
       await blogApi.createPost(formData);

@@ -2,13 +2,17 @@ import axios from "axios";
 
 function jwtInterceptor() {
   axios.interceptors.request.use((req) => {
-    const hasToken = Boolean(window.localStorage.getItem("token"));
+    const token = window.localStorage.getItem("token");
+    const hasToken = Boolean(token);
 
     if (hasToken) {
       req.headers = {
         ...req.headers,
-        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
       };
+      console.log('🔑 JWT Interceptor: Added Authorization header for', req.url);
+    } else {
+      console.log('⚠️ JWT Interceptor: No token found for', req.url);
     }
 
     return req;
@@ -19,13 +23,13 @@ function jwtInterceptor() {
       return response;
     },
     (error) => {
-      if (
-        error.response &&
-        error.response.status === 401 &&
-        error.response.data?.error?.includes("Unauthorized")
-      ) {
+      if (error.response && error.response.status === 401) {
+        console.log('🚫 JWT Interceptor: 401 Unauthorized - clearing token');
         window.localStorage.removeItem("token");
-        window.location.replace("/");
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/login') {
+          window.location.replace("/");
+        }
       }
       return Promise.reject(error);
     }

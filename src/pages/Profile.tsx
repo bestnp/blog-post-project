@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { useAuth } from "@/context/authentication";
+import { blogApi } from "@/services/api";
 
 interface ProfileData {
   name: string;
@@ -14,16 +17,34 @@ interface ProfileData {
 }
 
 const Profile: React.FC = () => {
+  const { state, fetchUser } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "Thompson P.",
-    username: "thompson",
-    email: "thompson.p@gmail.com",
-    bio: "I am a pet enthusiast and freelance writer who specializes in animal behavior and care. With a deep love for cats, I enjoy sharing insights on feline companionship and wellness.\n\nWhen I'm not writing, I spendz time volunteering at my local animal shelter, helping cats find loving homes.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+    name: "",
+    username: "",
+    email: "",
+    bio: "",
+    avatar: "",
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const MAX_BIO_LENGTH = 120;
+
+  // Load profile data
+  useEffect(() => {
+    if (state.user) {
+      setProfileData({
+        name: state.user.name || "",
+        username: state.user.username || "",
+        email: state.user.email || "",
+        bio: state.user.bio || "",
+        avatar: state.user.avatar || "",
+      });
+      setLoading(false);
+    }
+  }, [state.user]);
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     // Limit bio to MAX_BIO_LENGTH characters
@@ -37,10 +58,39 @@ const Profile: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    console.log("Saving profile data:", profileData);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // ⚠️ NOTE: /auth/profile endpoint is not available in backend API
+      // Profile update functionality needs to be implemented in backend
+      toast.error("Profile update endpoint is not available. Please contact administrator.");
+      setIsSaving(false);
+      return;
+      
+      // Code below is commented out until backend implements the endpoint
+      // const formData = new FormData();
+      // formData.append("name", profileData.name);
+      // formData.append("username", profileData.username);
+      // formData.append("email", profileData.email);
+      // formData.append("bio", profileData.bio || "");
+      // 
+      // if (avatarFile) {
+      //   formData.append("avatar", avatarFile);
+      // }
+      // 
+      // await blogApi.updateUserProfile(formData);
+      // await fetchUser();
+      // 
+      // setShowAlert(true);
+      // toast.success("Profile updated successfully");
+      // setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.response?.data?.error || error.message || "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleUploadPicture = () => {
@@ -50,6 +100,22 @@ const Profile: React.FC = () => {
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
       if (file) {
+        // Validate file type
+        const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+          toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          toast.error("The file is too large. Please upload an image smaller than 5MB.");
+          return;
+        }
+
+        setAvatarFile(file);
+        
         const reader = new FileReader();
         reader.onloadend = () => {
           setProfileData(prev => ({
@@ -79,8 +145,9 @@ const Profile: React.FC = () => {
               variant="default"
               size="default"
               className="!bg-brown-600 hover:!bg-brown-500 min-w-[120px]"
+              disabled={isSaving || loading}
             >
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </Button>
           </div>
 

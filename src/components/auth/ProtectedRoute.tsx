@@ -34,8 +34,18 @@ function ProtectedRoute({
   }
 
   // ถ้ากำหนด requiredRole แต่ userRole ไม่ตรงกับ requiredRole ให้ redirect ไปหน้า login
-  if (requiredRole && userRole !== requiredRole) {
-    return <Navigate to="/login" replace />;
+  // Backend returns role as "admin" or "authenticated" (for regular users)
+  if (requiredRole) {
+    const normalizedUserRole = userRole?.toLowerCase();
+    const normalizedRequiredRole = requiredRole.toLowerCase();
+    
+    // For "user" role, backend returns "authenticated", so we need to handle both
+    if (normalizedRequiredRole === 'user' && normalizedUserRole === 'authenticated') {
+      // Allow access for regular users
+    } else if (normalizedUserRole !== normalizedRequiredRole) {
+      // Role doesn't match - redirect to login
+      return <Navigate to="/login" replace />;
+    }
   }
 
   // ผู้ใช้มีการยืนยันตัวตนและมีบทบาทที่ถูกต้อง

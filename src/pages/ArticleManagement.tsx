@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import { AddRoundLight, EditLight, TrashLight, SearchLight } from "@/icon/IconsAll";
+import { AddRoundLight, EditLight, TrashLight } from "@/icon/IconsAll";
+import { blogApi, BlogPost } from "@/services/api";
 
 interface Article {
   id: number;
@@ -20,46 +22,57 @@ const ArticleManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<number | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const [articles, setArticles] = useState<Article[]>([
-    {
-      id: 1,
-      title: "Understanding Cat Behavior: Why Your Feline Friend Acts the Way They D...",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 2,
-      title: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 3,
-      title: "Finding Motivation: How to Stay Inspired Through Life's Challenges",
-      category: "General",
-      status: "Published",
-    },
-    {
-      id: 4,
-      title: "The Science of the Cat's Purr: How It Benefits Cats and Humans Alike",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 5,
-      title: "Top 10 Health Tips to Keep Your Cat Happy and Healthy",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 6,
-      title: "Unlocking Creativity: Simple Habits to Spark Inspiration Daily",
-      category: "Inspiration",
-      status: "Published",
-    },
-  ]);
+  const fetchArticles = async () => {
+    try {
+      setLoading(true);
+      const params: any = {};
+      if (statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      if (categoryFilter !== "all") {
+        params.category = categoryFilter;
+      }
+      if (searchQuery.trim()) {
+        params.keyword = searchQuery.trim();
+      }
+
+      const posts = await blogApi.getAllPosts(params);
+      // Map BlogPost to Article format
+      const mappedArticles: Article[] = posts.map((post: BlogPost) => {
+        // Map status_id to status string
+        let status: "Published" | "Draft" | "Archived" = "Published";
+        if (post.status_id === 1) {
+          status = "Draft";
+        } else if (post.status_id === 2) {
+          status = "Published";
+        }
+        
+        // Use category_name from backend response
+        const category = post.category_name || post.category || "General";
+        
+        return {
+          id: post.id,
+          title: post.title.length > 60 ? post.title.substring(0, 60) + "..." : post.title,
+          category: category,
+          status: post.status_name || post.status || status,
+        };
+      });
+      setArticles(mappedArticles);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+      toast.error("Failed to load articles");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch articles from API
+  useEffect(() => {
+    fetchArticles();
+  }, [statusFilter, categoryFilter, searchQuery]);
 
   const handleEdit = (id: number) => {
     navigate(`/admin/articles/edit/${id}`);
@@ -70,12 +83,18 @@ const ArticleManagement: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (articleToDelete !== null) {
-      console.log("Deleting article:", articleToDelete);
-      setArticles(articles.filter(article => article.id !== articleToDelete));
-      setShowDeleteModal(false);
-      setArticleToDelete(null);
+      try {
+        await blogApi.deletePost(articleToDelete);
+        toast.success("Article deleted successfully");
+        setArticles(articles.filter(article => article.id !== articleToDelete));
+        setShowDeleteModal(false);
+        setArticleToDelete(null);
+      } catch (error) {
+        console.error("Error deleting article:", error);
+        toast.error("Failed to delete article");
+      }
     }
   };
 
@@ -146,7 +165,6 @@ const ArticleManagement: React.FC = () => {
             <option value="all">Status</option>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
           </select>
 
           <select
@@ -181,7 +199,20 @@ const ArticleManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {articles.map((article, index) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
+                    Loading...
+                  </td>
+                </tr>
+              ) : articles.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
+                    No articles found
+                  </td>
+                </tr>
+              ) : (
+                articles.map((article, index) => (
                 <tr
                   key={article.id}
                   className={`
@@ -219,7 +250,8 @@ const ArticleManagement: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>

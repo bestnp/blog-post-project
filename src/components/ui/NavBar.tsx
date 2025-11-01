@@ -1,22 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogoIcon, BellLight, ExpandDownLight } from "@/icon/IconsAll";
 import { Button } from "@/components/ui/Button";
 import ProfileDropdown from "./ProfileDropdown";
 import NotificationDropdown from "./NotificationDropdown";
-import { NotificationData } from "./NotificationCard";
 import { useAuth } from "@/context/authentication";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Notification as NotificationType } from "@/services/api";
 
 interface NavBarProps {
-  notifications?: NotificationData[];
-  isAdmin?: boolean;
+  isAdmin?: boolean; // Deprecated - will use role from auth state instead
 }
 
 const NavBar: React.FC<NavBarProps> = ({ 
-  notifications = [],
-  isAdmin = false
+  isAdmin: propIsAdmin = false // Keep for backward compatibility
 }) => {
   const { isAuthenticated, state } = useAuth();
+  const { notifications: apiNotifications, unreadCount } = useNotifications(isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -25,6 +25,43 @@ const NavBar: React.FC<NavBarProps> = ({
   // Get user info from auth state
   const userName = state.user?.name || state.user?.username || "User";
   const userAvatar = state.user?.avatar || "https://via.placeholder.com/40";
+  
+  // Determine if user is admin based on role from auth state
+  // Backend should return role from database (admin/user) via /auth/me endpoint
+  // Check multiple possible role fields
+  const rawRole = state.user?.role;
+  const userRole = rawRole?.toLowerCase();
+  
+  // Admin can be identified by role === 'admin'
+  // Also check if role is explicitly 'admin' (case-insensitive)
+  const isAdmin = propIsAdmin || 
+    userRole === 'admin' ||
+    rawRole === 'admin' ||
+    (state.user as any)?.role === 'admin';
+  
+  // Debug logging and force re-render when user changes
+  useEffect(() => {
+    if (isAuthenticated && state.user) {
+      console.log('🔍 NavBar - User role check:', {
+        userRole,
+        rawRole: state.user?.role,
+        isAdmin,
+        userData: state.user,
+        isAuthenticated,
+      });
+    }
+  }, [state.user, isAuthenticated, userRole, isAdmin]);
+
+  // Convert API notifications to NotificationData format
+  const notifications = apiNotifications.map((notif: NotificationType) => ({
+    id: notif.id,
+    userName: notif.userName,
+    userAvatar: notif.userAvatar,
+    message: notif.message,
+    timestamp: notif.timestamp,
+    isRead: notif.isRead,
+    postId: notif.postId,
+  }));
 
   const handleLogoClick = () => {
     navigate('/');
@@ -79,7 +116,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 >
                   <BellLight className="w-6 h-6 text-brown-400" />
                   {/* Notification Badge - only show if there are unread notifications */}
-                  {notifications.filter(n => !n.isRead).length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
@@ -89,11 +126,17 @@ const NavBar: React.FC<NavBarProps> = ({
                   onClose={() => setIsNotificationOpen(false)}
                   notifications={notifications}
                   onNotificationClick={(notification) => {
-                    console.log('Notification clicked:', notification);
+                    if (notification.postId) {
+                      navigate(`/post/${notification.postId}`);
+                    }
                     setIsNotificationOpen(false);
                   }}
                   onViewAll={() => {
-                    console.log('View all notifications');
+                    if (isAdmin) {
+                      navigate('/admin/notifications');
+                    } else {
+                      navigate('/notifications');
+                    }
                   }}
                 />
               </div>

@@ -45,23 +45,20 @@ const ArticleDetail: React.FC = () => {
         const fetchedPost = await blogApi.getPostById(parseInt(postId));
         setPost(fetchedPost);
 
-        // ดึงข้อมูล author
-        try {
-          const fetchedAuthor = await blogApi.getAuthorByName(fetchedPost.author);
-          setAuthor(fetchedAuthor);
-        } catch (authorErr) {
-          console.error('Error fetching author:', authorErr);
-          // ถ้าดึงข้อมูล author ไม่ได้ ก็ไม่เป็นไร จะใช้ข้อมูลพื้นฐานจาก post
+        // ⚠️ Author endpoint not available in backend - using post data
+        // Create author object from post data if needed
+        if (fetchedPost.author) {
+          setAuthor({
+            id: 0,
+            name: fetchedPost.author,
+            avatar: "",
+            bio: "",
+          });
         }
 
-        // ดึงข้อมูล comments
-        try {
-          const fetchedComments = await blogApi.getComments(parseInt(postId));
-          setComments(fetchedComments);
-        } catch (commentsErr) {
-          console.error('Error fetching comments:', commentsErr);
-          // ถ้าดึงข้อมูล comments ไม่ได้ ก็ไม่เป็นไร จะใช้ข้อมูลว่าง
-        }
+        // ⚠️ Comments endpoint not available in backend
+        // Comments will remain empty array
+        setComments([]);
       } catch (err) {
         setError('Failed to load article');
         console.error('Error fetching post:', err);
@@ -214,7 +211,7 @@ const ArticleDetail: React.FC = () => {
                   className="flex items-center gap-2 px-[40px] py-[12px] bg-white border border-brown-400 rounded-full text-brown-600 hover:bg-brown-50 transition-colors"
                 >
                   <HappyLight className="w-6 h-6 text-brown-600" />
-                  <span className="text-brown-600 font-medium text-body-lg">{post.likes}</span>
+                  <span className="text-brown-600 font-medium text-body-lg">{post.likes_count || post.likes || 0}</span>
                 </button>
                 
                 {/* Copy Link Button and Social Icons */}

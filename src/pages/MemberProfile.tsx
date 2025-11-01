@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import NavBar from "@/components/ui/NavBar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { UserDuotone, RefreshLight } from "@/icon/IconsAll";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useAuth } from "@/context/authentication";
+import { blogApi, authApi } from "@/services/api";
 
 interface ProfileData {
   name: string;
@@ -22,7 +25,11 @@ interface PasswordData {
 
 const MemberProfile: React.FC = () => {
   const location = useLocation();
+  const { state, fetchUser } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "reset-password">("profile");
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   // Check URL parameter for tab
   useEffect(() => {
@@ -34,11 +41,25 @@ const MemberProfile: React.FC = () => {
       setActiveTab('profile');
     }
   }, [location.search]);
+
+  // Load profile data
+  useEffect(() => {
+    if (state.user) {
+      setProfileData({
+        name: state.user.name || "",
+        username: state.user.username || "",
+        email: state.user.email || "",
+        avatar: state.user.avatar || "",
+      });
+      setLoading(false);
+    }
+  }, [state.user]);
+
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "Moodeng ja",
-    username: "moodeng.cute",
-    email: "moodeng.cute@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400",
+    name: "",
+    username: "",
+    email: "",
+    avatar: "",
   });
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -64,29 +85,85 @@ const MemberProfile: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    console.log("Saving profile data:", profileData);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // ⚠️ NOTE: /auth/profile endpoint is not available in backend API
+      // Profile update functionality needs to be implemented in backend
+      toast.error("Profile update endpoint is not available. Please contact administrator.");
+      setIsSaving(false);
+      return;
+      
+      // Code below is commented out until backend implements the endpoint
+      // const formData = new FormData();
+      // formData.append("name", profileData.name);
+      // formData.append("username", profileData.username);
+      // formData.append("email", profileData.email);
+      // 
+      // if (avatarFile) {
+      //   formData.append("avatar", avatarFile);
+      // }
+      // 
+      // await blogApi.updateUserProfile(formData);
+      // await fetchUser();
+      // 
+      // setShowAlert(true);
+      // toast.success("Profile updated successfully");
+      // setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.response?.data?.error || error.message || "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleResetPassword = () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast.error('Please fill in all fields');
       return;
     }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('New password and confirm password do not match');
+      return;
+    }
+    
     setShowResetModal(true);
   };
 
-  const handleConfirmReset = () => {
-    console.log("Resetting password");
+  const handleConfirmReset = async () => {
     setShowResetModal(false);
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+    setIsSaving(true);
+
+    try {
+      // Use PUT /auth/reset-password for changing password when logged in
+      await authApi.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setShowAlert(true);
+      toast.success('Password updated successfully');
+      setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to reset password';
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleUploadPicture = () => {
@@ -96,6 +173,22 @@ const MemberProfile: React.FC = () => {
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
       if (file) {
+        // Validate file type
+        const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+          toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          toast.error("The file is too large. Please upload an image smaller than 5MB.");
+          return;
+        }
+
+        setAvatarFile(file);
+        
         const reader = new FileReader();
         reader.onloadend = () => {
           setProfileData(prev => ({
@@ -113,7 +206,6 @@ const MemberProfile: React.FC = () => {
     <div className="min-h-screen bg-brown-50">
       {/* NavBar */}
       <NavBar 
-        notifications={[]}
         isAdmin={false}
       />
 
@@ -227,8 +319,9 @@ const MemberProfile: React.FC = () => {
                     variant="default"
                     size="default"
                     className="!bg-brown-600 hover:!bg-brown-500"
+                    disabled={isSaving || loading}
                   >
-                    Save
+                    {isSaving ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>
