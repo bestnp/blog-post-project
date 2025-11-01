@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -6,6 +7,7 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import Modal from "@/components/ui/Modal";
 import { Alert } from "@/components/ui/Alert";
 import { AddRoundLight, EditLight, TrashLight } from "@/icon/IconsAll";
+import { blogApi } from "@/services/api";
 
 interface Category {
   id: number;
@@ -14,11 +16,8 @@ interface Category {
 
 const CategoryManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: "Cat" },
-    { id: 2, name: "General" },
-    { id: 3, name: "Inspiration" },
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
@@ -36,6 +35,24 @@ const CategoryManagement: React.FC = () => {
     message: "",
   });
 
+  // Fetch categories from API
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await blogApi.getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      toast.error("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter categories based on search
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -46,23 +63,25 @@ const CategoryManagement: React.FC = () => {
     setCategoryName("");
   };
 
-  const handleConfirmCreate = () => {
-    if (categoryName.trim()) {
-      const newCategory = {
-        id: Math.max(...categories.map((c) => c.id), 0) + 1,
-        name: categoryName.trim(),
-      };
+  const handleConfirmCreate = async () => {
+    if (!categoryName.trim()) return;
+    
+    try {
+      const newCategory = await blogApi.createCategory(categoryName.trim());
       setCategories([...categories, newCategory]);
       setShowCreateModal(false);
       setCategoryName("");
       
-      // Show success alert
       setAlertConfig({
         title: "Create category",
         message: "Category has been successfully created",
       });
       setShowAlert(true);
+      toast.success("Category created successfully");
       setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error("Error creating category:", error);
+      toast.error(error.response?.data?.error || "Failed to create category");
     }
   };
 
@@ -72,24 +91,30 @@ const CategoryManagement: React.FC = () => {
     setShowEditModal(true);
   };
 
-  const handleConfirmEdit = () => {
-    if (categoryToEdit && categoryName.trim()) {
+  const handleConfirmEdit = async () => {
+    if (!categoryToEdit || !categoryName.trim()) return;
+    
+    try {
+      const updatedCategory = await blogApi.updateCategory(categoryToEdit.id, categoryName.trim());
       setCategories(
         categories.map((cat) =>
-          cat.id === categoryToEdit.id ? { ...cat, name: categoryName.trim() } : cat
+          cat.id === categoryToEdit.id ? updatedCategory : cat
         )
       );
       setShowEditModal(false);
       setCategoryToEdit(null);
       setCategoryName("");
       
-      // Show success alert
       setAlertConfig({
         title: "Edit category",
         message: "Category has been successfully updated",
       });
       setShowAlert(true);
+      toast.success("Category updated successfully");
       setTimeout(() => setShowAlert(false), 3000);
+    } catch (error: any) {
+      console.error("Error updating category:", error);
+      toast.error(error.response?.data?.error || "Failed to update category");
     }
   };
 
@@ -98,11 +123,18 @@ const CategoryManagement: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (categoryToDelete !== null) {
+  const handleConfirmDelete = async () => {
+    if (categoryToDelete === null) return;
+    
+    try {
+      await blogApi.deleteCategory(categoryToDelete);
       setCategories(categories.filter((cat) => cat.id !== categoryToDelete));
       setShowDeleteModal(false);
       setCategoryToDelete(null);
+      toast.success("Category deleted successfully");
+    } catch (error: any) {
+      console.error("Error deleting category:", error);
+      toast.error(error.response?.data?.error || "Failed to delete category");
     }
   };
 
@@ -156,7 +188,13 @@ const CategoryManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredCategories.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : filteredCategories.length === 0 ? (
                   <tr>
                     <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
                       No categories found

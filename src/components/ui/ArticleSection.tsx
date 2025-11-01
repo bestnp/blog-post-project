@@ -63,9 +63,19 @@ export default function ArticleSection() {
       setHasNextPage(hasNext);
       setTotalPosts(response.totalPosts);
       setCurrentPage(response.currentPage);
-    } catch (err) {
-      setError("Failed to load posts. Please try again.");
+    } catch (err: any) {
+      // Get specific error message from API response
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          err.message || 
+                          "Failed to load posts. Please try again.";
+      setError(errorMessage);
       console.error("Error fetching posts:", err);
+      console.error("Error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
     } finally {
       if (append) {
         setLoadingMore(false);

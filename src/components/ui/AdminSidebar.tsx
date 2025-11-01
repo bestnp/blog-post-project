@@ -10,6 +10,7 @@ import {
   SignOutSquareLight,
   OutLight
 } from "@/icon/IconsAll";
+import { useAuth } from "@/context/authentication";
 
 interface AdminSidebarProps {
   userName?: string;
@@ -18,6 +19,7 @@ interface AdminSidebarProps {
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName = "Admin" }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -49,9 +51,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName = "Admin" }) => {
     },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log("Logging out...");
-    navigate("/login");
+    await logout(); // Use logout from useAuth which calls API
   };
 
   const handleWebsiteClick = () => {

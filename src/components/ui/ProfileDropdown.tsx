@@ -1,16 +1,48 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserDuotone, SignOutSquareLight, RefreshLight, NotebookLight } from '@/icon/IconsAll';
+import { useAuth } from '@/context/authentication';
 
 interface ProfileDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   anchorEl?: HTMLElement | null;
-  isAdmin?: boolean;
+  isAdmin?: boolean; // Deprecated - will use role from auth state instead
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAdmin = false }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ 
+  isOpen, 
+  onClose, 
+  isAdmin: propIsAdmin = false // Keep for backward compatibility
+}) => {
   const navigate = useNavigate();
+  const { logout, state } = useAuth();
+  
+  // Determine if user is admin based on role from auth state
+  // Backend should return role from database (admin/user) via /auth/me endpoint
+  // Check multiple possible role fields
+  const rawRole = state.user?.role;
+  const userRole = rawRole?.toLowerCase();
+  
+  // Admin can be identified by role === 'admin'
+  // Also check if role is explicitly 'admin' (case-insensitive)
+  const isAdmin = propIsAdmin || 
+    userRole === 'admin' ||
+    rawRole === 'admin' ||
+    (state.user as any)?.role === 'admin';
+  
+  // Debug logging and force re-render when user changes
+  useEffect(() => {
+    if (state.user) {
+      console.log('🔍 ProfileDropdown - User role check:', {
+        userRole,
+        rawRole: state.user?.role,
+        isAdmin,
+        userData: state.user,
+        isOpen,
+      });
+    }
+  }, [state.user, userRole, isAdmin, isOpen]);
 
   if (!isOpen) return null;
 
@@ -38,9 +70,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, isAd
   };
 
   const handleLogoutClick = () => {
-    // Handle logout logic here
-    console.log('Logging out...');
-    navigate('/login');
+    logout();
     onClose();
   };
 

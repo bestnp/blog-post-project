@@ -7,6 +7,7 @@ export interface NotificationData {
   message: string;
   timestamp: string;
   isRead?: boolean;
+  postId?: number;
 }
 
 interface NotificationCardProps {

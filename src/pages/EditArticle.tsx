@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { ImgBoxLight, TrashLight } from "@/icon/IconsAll";
+import { blogApi } from "@/services/api";
 
 interface ArticleData {
   thumbnailImage: File | null;
@@ -40,42 +42,59 @@ const EditArticle: React.FC = () => {
     variant: "success",
   });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Category mapping (hardcoded since backend doesn't have categories endpoint)
+  const categoryMapping: { [key: string]: number } = {
+    "Cat": 1,
+    "General": 2,
+    "Inspiration": 3,
+    "Highlight": 4,
+  };
+  
+  const reverseCategoryMapping: { [key: number]: string } = {
+    1: "Cat",
+    2: "General",
+    3: "Inspiration",
+    4: "Highlight",
+  };
+  
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
   // Load article data
   useEffect(() => {
-    // TODO: Fetch article data from API using id
-    // Mock data for now
-    const mockArticle = {
-      thumbnailImage: null,
-      category: "Cat",
-      authorName: "Thompson P.",
-      title: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-      introduction:
-        "Cats have captivated human hearts for thousands of years. Whether lounging in a sunny spot or playfully chasing a string, these furry companions bring warmth and joy to millions of homes. But what makes cats so special? Let's dive into the unique traits, behaviors, and quirks that make cats endlessly fascinating.",
-      content: `1. Independent Yet Affectionate
-
-One of the most remarkable traits of cats is their balance between independence and affection. Unlike dogs, who are often eager for constant attention, cats enjoy their alone time. They can spend hours grooming themselves, exploring the house, or napping in quiet corners. However, when they do want to seek it out with a soft purr, a gentle nuzzle, or by curling up on your lap.
-
-This quality makes cats appealing to many people who appreciate the fact that their feline companions are low-maintenance but still loving. It's like having a roommate who enjoys your company but doesn't demand too much of your time!
-
-2. Playful Personalities
-
-Cats are naturally curious and playful. From kittens to adults, they enjoy engaging with toys, climbing furniture, or chasing after imaginary prey. Their play often mimics hunting behavior, which is a nod to their wild ancestors. Whether they're pouncing on a feather toy or darting across a room, their agility and precision are less lethal. It's important for their mental health too.
-
-This playfulness also serves as mental stimulation for cats. Providing toys and opportunities to climb or explore helps them stay active and prevents boredom, which is important for indoor cats.
-
-3. Communication Through Body Language
-
-Cats are master communicators, though they do so in subtle ways. Understanding a cat's body language can deepen the bond between you and your pet. Here are some common signals:
-
-Purring: Usually a sign of contentment, though cats may also purr when anxious or in pain.`,
+    const fetchArticle = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const post = await blogApi.getPostById(parseInt(id));
+        
+        // Map category_id back to category name for display
+        const categoryName = post.category_name || post.category || reverseCategoryMapping[post.category_id || 1] || "General";
+        
+        setArticleData({
+          thumbnailImage: null,
+          category: categoryName,
+          authorName: post.author || "Thompson P.",
+          title: post.title,
+          introduction: post.description || "",
+          content: post.content || "",
+        });
+        
+        if (post.image) {
+          setThumbnailPreview(post.image);
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        toast.error("Failed to load article");
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    setArticleData(mockArticle);
-    // Mock thumbnail preview (in real app, you'd fetch the image URL)
-    setThumbnailPreview("https://images.unsplash.com/photo-1574158622682-e40e69881006");
+
+    fetchArticle();
   }, [id]);
 
   const handleInputChange = (field: keyof ArticleData, value: string) => {
@@ -101,114 +120,114 @@ Purring: Usually a sign of contentment, though cats may also purr when anxious o
     }
   };
 
-  const handleSaveAsDraft = () => {
+  const handleSave = async (statusId: number) => {
+    if (!id) return;
+    
+    // Validate required fields
     if (!articleData.title.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter article title",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      toast.error("Please enter article title");
       return;
     }
     if (!articleData.category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (statusId === 2 && !articleData.introduction.trim()) {
+      toast.error("Please enter introduction for published articles");
+      return;
+    }
+    if (statusId === 2 && !articleData.content.trim()) {
+      toast.error("Please enter content for published articles");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // Get category_id from category name
+      const categoryId = categoryMapping[articleData.category] || 1;
+      
+      const formData = new FormData();
+      formData.append("title", articleData.title);
+      formData.append("category_id", categoryId.toString()); // Backend expects category_id
+      formData.append("description", articleData.introduction || "");
+      formData.append("content", articleData.content || "");
+      formData.append("status_id", statusId.toString());
+
+      // Backend PUT /assignments/:id expects image as URL string, not file
+      // If there's a new image file, we'd need to upload it first or use upload endpoint
+      // For now, send the existing image URL if available
+      if (thumbnailPreview && !thumbnailPreview.startsWith('blob:')) {
+        // Only send if it's not a blob URL (means it's an existing URL)
+        formData.append("image", thumbnailPreview);
+      }
+      
+      // TODO: Handle new image upload - might need separate upload endpoint
+      // For now, new image uploads in edit mode are not fully supported
+      // (Backend PUT endpoint doesn't accept multipart/form-data)
+
+      await blogApi.updatePost(parseInt(id), formData);
+
       setAlertConfig({
-        title: "Validation Error",
-        message: "Please select a category",
+        title: statusId === 1 ? "Article saved as draft" : "Article updated successfully!",
+        message: statusId === 1 ? "You can publish article later" : "Your changes have been saved",
+        variant: "success",
+      });
+      setShowAlert(true);
+      toast.success(statusId === 1 ? "Article saved as draft!" : "Article updated successfully!");
+
+      setTimeout(() => {
+        navigate("/admin/articles");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error updating article:", error);
+      const errorMessage = error.response?.data?.error || error.message || "Failed to update article. Please try again.";
+      toast.error(errorMessage);
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
         variant: "error",
       });
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 3000);
-      return;
+    } finally {
+      setIsSaving(false);
     }
-
-    console.log("Saving as draft:", articleData);
-    setAlertConfig({
-      title: "Article saved as draft",
-      message: "You can publish article later",
-      variant: "success",
-    });
-    setShowAlert(true);
-
-    setTimeout(() => {
-      navigate("/admin/articles");
-    }, 2000);
   };
 
-  const handleSave = () => {
-    if (!articleData.title.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter article title",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.category) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please select a category",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.introduction.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter introduction",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
-    if (!articleData.content.trim()) {
-      setAlertConfig({
-        title: "Validation Error",
-        message: "Please enter content",
-        variant: "error",
-      });
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-      return;
-    }
+  const handleSaveAsDraft = () => {
+    handleSave(1); // status_id = 1 for draft
+  };
 
-    console.log("Saving article:", articleData);
-    setAlertConfig({
-      title: "Article updated successfully!",
-      message: "Your changes have been saved",
-      variant: "success",
-    });
-    setShowAlert(true);
-
-    setTimeout(() => {
-      navigate("/admin/articles");
-    }, 2000);
+  const handleSaveAndPublish = () => {
+    handleSave(2); // status_id = 2 for published
   };
 
   const handleDeleteArticle = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    console.log("Deleting article:", id);
-    // TODO: API call to delete article
-    setShowDeleteModal(false);
-    setAlertConfig({
-      title: "Article deleted",
-      message: "Article has been permanently deleted",
-      variant: "success",
-    });
-    setShowAlert(true);
+  const handleConfirmDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await blogApi.deletePost(parseInt(id));
+      setShowDeleteModal(false);
+      setAlertConfig({
+        title: "Article deleted",
+        message: "Article has been permanently deleted",
+        variant: "success",
+      });
+      setShowAlert(true);
+      toast.success("Article deleted successfully");
 
-    setTimeout(() => {
-      navigate("/admin/articles");
-    }, 2000);
+      setTimeout(() => {
+        navigate("/admin/articles");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error deleting article:", error);
+      toast.error("Failed to delete article");
+    }
   };
 
   return (
@@ -221,16 +240,22 @@ Purring: Usually a sign of contentment, though cats may also purr when anxious o
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-h3 font-bold text-brown-600">Edit article</h1>
             <div className="flex gap-3">
-              <Button onClick={handleSaveAsDraft} variant="secondary" size="default">
-                Save as draft
+              <Button 
+                onClick={handleSaveAsDraft} 
+                variant="secondary" 
+                size="default"
+                disabled={isSaving || loading}
+              >
+                {isSaving ? "Saving..." : "Save as draft"}
               </Button>
               <Button
-                onClick={handleSave}
+                onClick={handleSaveAndPublish}
                 variant="default"
                 size="default"
                 className="!bg-brown-600 hover:!bg-brown-500"
+                disabled={isSaving || loading}
               >
-                Save
+                {isSaving ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>
@@ -238,8 +263,16 @@ Purring: Usually a sign of contentment, though cats may also purr when anxious o
           {/* Divider */}
           <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
 
-          {/* Form */}
-          <div className="space-y-6">
+          {/* Loading State */}
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
+                <p className="text-brown-600 text-body-lg">Loading article...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
             {/* Thumbnail Image */}
             <div>
               <label className="block text-body-md font-medium text-brown-600 mb-2">
@@ -379,6 +412,7 @@ Purring: Usually a sign of contentment, though cats may also purr when anxious o
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
 
