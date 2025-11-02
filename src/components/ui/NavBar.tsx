@@ -16,6 +16,10 @@ const NavBar: React.FC<NavBarProps> = ({
   isAdmin: propIsAdmin = false // Keep for backward compatibility
 }) => {
   const { isAuthenticated, state } = useAuth();
+  
+  // Force re-render when authentication state changes
+  // This ensures NavBar updates immediately after login
+  const authKey = `${isAuthenticated}-${state.user?.id || 'none'}-${state.user?.role || 'none'}-${state.getUserLoading || false}`;
   const { notifications: apiNotifications, unreadCount } = useNotifications(isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -39,18 +43,36 @@ const NavBar: React.FC<NavBarProps> = ({
     rawRole === 'admin' ||
     (state.user as any)?.role === 'admin';
   
-  // Debug logging and force re-render when user changes
+  // Show loading state while fetching user (only during initial load, not during refresh)
+  if (state.getUserLoading && !state.user && localStorage.getItem('token')) {
+    return (
+      <nav className="bg-white border-b border-brown-300">
+        <div className="max-w-[1200px] mx-auto w-full">
+          <div className="flex justify-between items-center px-4 py-4">
+            <button onClick={() => navigate('/')} className="text-xl font-semibold text-brown-500">
+              <LogoIcon className="w-[44px] h-[44px]" />
+            </button>
+            <div className="text-body-md text-brown-400">Loading...</div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+  
+  // Debug logging when user changes
   useEffect(() => {
-    if (isAuthenticated && state.user) {
-      console.log('🔍 NavBar - User role check:', {
-        userRole,
-        rawRole: state.user?.role,
-        isAdmin,
-        userData: state.user,
-        isAuthenticated,
-      });
-    }
-  }, [state.user, isAuthenticated, userRole, isAdmin]);
+    console.log('🔄 NavBar - State changed:', {
+      isAuthenticated,
+      hasUser: !!state.user,
+      userId: state.user?.id,
+      userRole,
+      rawRole: state.user?.role,
+      isAdmin,
+      userName,
+      getUserLoading: state.getUserLoading,
+      authKey,
+    });
+  }, [state.user, isAuthenticated, userRole, isAdmin, userName, authKey]);
 
   // Convert API notifications to NotificationData format
   const notifications = apiNotifications.map((notif: NotificationType) => ({
@@ -76,7 +98,7 @@ const NavBar: React.FC<NavBarProps> = ({
   };
 
   return (
-    <nav className="bg-white border-b border-brown-300">
+    <nav key={`navbar-${authKey}`} className="bg-white border-b border-brown-300">
       <div className="max-w-[1200px] mx-auto w-full">
         <div className="flex justify-between items-center px-4 py-4">
           {/* Logo */}
@@ -152,11 +174,15 @@ const NavBar: React.FC<NavBarProps> = ({
                     alt={userName}
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <span className="text-body-lg text-brown-500 font-medium">{userName}</span>
+                  <span className="text-body-lg text-brown-500 font-medium">
+                    {userName}
+                    {isAdmin && <span className="ml-2 text-xs text-brown-400">(Admin)</span>}
+                  </span>
                   <ExpandDownLight className="w-5 h-5 text-brown-400" />
                 </button>
 
                 <ProfileDropdown
+                  key={`profile-${authKey}`}
                   isOpen={isProfileDropdownOpen}
                   onClose={() => setIsProfileDropdownOpen(false)}
                   isAdmin={isAdmin}

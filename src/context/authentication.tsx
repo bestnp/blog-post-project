@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -39,7 +39,7 @@ interface AuthContextType {
   logout: () => void;
   register: (data: RegisterData) => Promise<{ error?: string } | void>;
   isAuthenticated: boolean;
-  fetchUser: () => Promise<void>;
+  fetchUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -96,15 +96,30 @@ function AuthProvider({ children }: AuthProviderProps) {
         fullUserData: userData
       });
       
-      setState((prevState) => ({
-        ...prevState,
-        user: userData,
-        getUserLoading: false,
-        error: null,
-      }));
+      // Update state with user data
+      setState((prevState) => {
+        const newState = {
+          ...prevState,
+          user: userData,
+          getUserLoading: false,
+          error: null,
+        };
+        console.log('📊 Auth state updated with user:', {
+          newUser: userData,
+          newState,
+          willSetState: true,
+        });
+        return newState;
+      });
       
-      // Log after state update
-      console.log('📊 Auth state updated with user:', userData);
+      // Log after state update - use setTimeout to ensure state is updated
+      setTimeout(() => {
+        console.log('📊 Auth state after update:', {
+          userId: userData?.id,
+          userRole: userData?.role,
+          userName: userData?.name || userData?.username,
+        });
+      }, 100);
       
       return userData;
     } catch (error: any) {
@@ -183,17 +198,23 @@ function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem("token", token);
       console.log('💾 Token saved to localStorage:', token.substring(0, 20) + '...');
 
-      // Clear loading state
-      setState((prevState) => ({ ...prevState, loading: false, error: null }));
-      
-      // Fetch user data before navigating
+      // Fetch user data before navigating - wait for state to update
       console.log('👤 Fetching user data...');
       try {
         const userData = await fetchUser();
         if (userData) {
           console.log('✅ User data fetched successfully');
           console.log('👑 User role from fetchUser:', userData?.role);
-          console.log('👑 User role from state:', state.user?.role);
+          
+          // Wait a bit to ensure state has updated and components have re-rendered
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // Double-check state after delay
+          console.log('👑 Final state check after login:', {
+            hasUser: !!state.user,
+            userId: state.user?.id,
+            userRole: state.user?.role,
+          });
         } else {
           console.warn('⚠️ fetchUser returned null');
         }
@@ -204,12 +225,24 @@ function AuthProvider({ children }: AuthProviderProps) {
           status: fetchError.response?.status,
         });
         // Don't throw here, user is still logged in even if fetch fails
-        // But we should still show an error to user
         console.warn('Continuing with login even though user fetch failed');
       }
       
+      // Clear loading state after fetchUser
+      setState((prevState) => {
+        console.log('✅ Final state update after login:', {
+          hasUser: !!prevState.user,
+          userId: prevState.user?.id,
+          userRole: prevState.user?.role,
+        });
+        return { ...prevState, loading: false, error: null };
+      });
+      
+      // Wait one more tick to ensure state update is processed
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       console.log('🚀 Navigating to home...');
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error: any) {
       console.error('❌ Login error:', {
         message: error.message,
@@ -296,19 +329,39 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const isAuthenticated = Boolean(state.user);
+  // Calculate isAuthenticated based on state.user
+  // Use useMemo to ensure it updates when state.user changes
+  const isAuthenticated = useMemo(() => {
+    const authenticated = Boolean(state.user && state.user.id);
+    return authenticated;
+  }, [state.user]);
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('🔐 Auth Context - State updated:', {
+      hasUser: !!state.user,
+      userId: state.user?.id,
+      userRole: state.user?.role,
+      userName: state.user?.name || state.user?.username,
+      isAuthenticated,
+      getUserLoading: state.getUserLoading,
+      loading: state.loading,
+    });
+  }, [state.user, isAuthenticated, state.getUserLoading, state.loading]);
+
+  // Context value - don't memoize functions to avoid dependency issues
+  // React will handle re-renders efficiently
+  const contextValue = {
+    state,
+    login,
+    logout,
+    register,
+    isAuthenticated,
+    fetchUser,
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        state,
-        login,
-        logout,
-        register,
-        isAuthenticated,
-        fetchUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
