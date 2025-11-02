@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import axios from "axios";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { ImgBoxLight } from "@/icon/IconsAll";
 import { blogApi } from "@/services/api";
+
+const API_BASE_URL = 'https://blog-post-project-api-five.vercel.app';
 
 interface ArticleData {
   thumbnailImage: File | null;
@@ -59,24 +61,26 @@ const CreateArticle: React.FC = () => {
     }));
   };
 
-  const handleThumbnailUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // ฟังก์ชันสำหรับจัดการเมื่อมีการเลือกไฟล์
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
+    // ตรวจสอบประเภทของไฟล์
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
     if (!file) {
       return;
     }
 
-    // ตรวจสอบประเภทของไฟล์
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+      alert("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
       return;
     }
 
     // ตรวจสอบขนาดของไฟล์ (เช่น ขนาดไม่เกิน 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error("The file is too large. Please upload an image smaller than 5MB.");
+      alert("The file is too large. Please upload an image smaller than 5MB.");
       return;
     }
 
@@ -94,50 +98,61 @@ const CreateArticle: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  // ฟังก์ชันสำหรับการบันทึกข้อมูลโพสต์
   const handleSave = async (statusId: number) => {
     // Validate required fields
     if (!articleData.title.trim()) {
-      toast.error("Please enter article title");
+      alert("Please enter article title");
       return;
     }
     if (!articleData.category) {
-      toast.error("Please select a category");
+      alert("Please select a category");
       return;
     }
     if (statusId === 2 && !articleData.introduction.trim()) {
-      toast.error("Please enter introduction for published articles");
+      alert("Please enter introduction for published articles");
       return;
     }
     if (statusId === 2 && !articleData.content.trim()) {
-      toast.error("Please enter content for published articles");
+      alert("Please enter content for published articles");
       return;
     }
 
     // Validate image file
     if (!articleData.thumbnailImage) {
-      toast.error("Please select an image file.");
+      alert("Please select an image file.");
       return;
     }
 
     setIsLoading(true);
 
-            try {
-              // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
-              const formData = new FormData();
+    try {
+      // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
+      const formData = new FormData();
 
-              // Get category_id from category name
-              const categoryId = categoryMapping[articleData.category] || 1;
+      // Get category_id from category name
+      const categoryId = categoryMapping[articleData.category] || 1;
 
-              // เพิ่มข้อมูลทั้งหมดลงใน FormData (backend expects category_id, not category)
-              formData.append("title", articleData.title);
-              formData.append("category_id", categoryId.toString());
-              formData.append("description", articleData.introduction || "");
-              formData.append("content", articleData.content || "");
-              formData.append("status_id", statusId.toString());
-              formData.append("imageFile", articleData.thumbnailImage);
+      // เพิ่มข้อมูลทั้งหมดลงใน FormData
+      formData.append("title", articleData.title);
+      formData.append("category_id", categoryId.toString());
+      formData.append("description", articleData.introduction || "");
+      formData.append("content", articleData.content || "");
+      formData.append("status_id", statusId.toString());
+      formData.append("imageFile", articleData.thumbnailImage); // เพิ่มไฟล์รูปภาพ
 
-      // ส่งข้อมูลไปยัง Backend (JWT interceptor จะเพิ่ม Authorization header อัตโนมัติ)
-      await blogApi.createPost(formData);
+      // ส่งข้อมูลไปยัง Backend
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_BASE_URL}/assignments/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${token}`, // ใช้ token สำหรับการยืนยันตัวตน
+          },
+        }
+      );
 
       // Show success message
       if (statusId === 1) {
@@ -146,15 +161,16 @@ const CreateArticle: React.FC = () => {
           message: "You can publish article later",
           variant: "success",
         });
+        alert("Post created successfully and saved as draft!");
       } else {
         setAlertConfig({
           title: "Article published successfully!",
           message: "Your article is now live and visible to readers",
           variant: "success",
         });
+        alert("Post created successfully!");
       }
       setShowAlert(true);
-      toast.success(statusId === 1 ? "Article saved as draft!" : "Article published successfully!");
 
       // Navigate back to article management
       setTimeout(() => {
@@ -162,15 +178,15 @@ const CreateArticle: React.FC = () => {
       }, 2000);
     } catch (error: any) {
       console.error("Error creating post:", error);
-      const errorMessage = error.response?.data?.error || error.message || "Failed to create post. Please try again.";
-      toast.error(errorMessage);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to create post. Please try again.";
+      alert(errorMessage);
       setAlertConfig({
         title: "Error",
         message: errorMessage,
         variant: "error",
       });
       setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -258,7 +274,7 @@ const CreateArticle: React.FC = () => {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleThumbnailUpload}
+                  onChange={handleFileChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
               </div>

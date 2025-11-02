@@ -5,7 +5,6 @@ import Input from '@/components/ui/Input';
 import NavBar from '@/components/ui/NavBar';
 import { Alert } from '@/components/ui/Alert';
 import { useAuth } from '@/context/authentication';
-import { toast } from 'sonner';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +35,11 @@ const Login: React.FC = () => {
     setShowErrorAlert(false);
     
     if (!formData.email || !formData.password) {
-      toast.error('Please fill in all fields');
+      setHasError(true);
+      setShowErrorAlert(true);
+      setTimeout(() => {
+        setShowErrorAlert(false);
+      }, 5000);
       return;
     }
 
@@ -50,21 +53,16 @@ const Login: React.FC = () => {
       if (result && 'error' in result) {
         setHasError(true);
         setShowErrorAlert(true);
-        // Show actual error message in toast
-        toast.error(result.error || 'Login failed');
         // Auto hide after 5 seconds
         setTimeout(() => {
           setShowErrorAlert(false);
         }, 5000);
-      } else {
-        // Login successful - navigation is handled in login function
-        toast.success('Login successful!');
       }
+      // Login successful - navigation is handled in login function
     } catch (error: any) {
       console.error('Login error in component:', error);
       setHasError(true);
       setShowErrorAlert(true);
-      toast.error(error.message || 'An unexpected error occurred');
       setTimeout(() => {
         setShowErrorAlert(false);
       }, 5000);
