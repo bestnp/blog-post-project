@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -88,7 +87,13 @@ const EditArticle: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching article:", error);
-        toast.error("Failed to load article");
+        setAlertConfig({
+          title: "Error",
+          message: "Failed to load article",
+          variant: "error",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
       } finally {
         setLoading(false);
       }
@@ -125,19 +130,43 @@ const EditArticle: React.FC = () => {
     
     // Validate required fields
     if (!articleData.title.trim()) {
-      toast.error("Please enter article title");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter article title",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (!articleData.category) {
-      toast.error("Please select a category");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please select a category",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (statusId === 2 && !articleData.introduction.trim()) {
-      toast.error("Please enter introduction for published articles");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter introduction for published articles",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (statusId === 2 && !articleData.content.trim()) {
-      toast.error("Please enter content for published articles");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter content for published articles",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
 
@@ -174,7 +203,6 @@ const EditArticle: React.FC = () => {
         variant: "success",
       });
       setShowAlert(true);
-      toast.success(statusId === 1 ? "Article saved as draft!" : "Article updated successfully!");
 
       setTimeout(() => {
         navigate("/admin/articles");
@@ -182,14 +210,13 @@ const EditArticle: React.FC = () => {
     } catch (error: any) {
       console.error("Error updating article:", error);
       const errorMessage = error.response?.data?.error || error.message || "Failed to update article. Please try again.";
-      toast.error(errorMessage);
       setAlertConfig({
         title: "Error",
         message: errorMessage,
         variant: "error",
       });
       setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -219,14 +246,19 @@ const EditArticle: React.FC = () => {
         variant: "success",
       });
       setShowAlert(true);
-      toast.success("Article deleted successfully");
 
       setTimeout(() => {
         navigate("/admin/articles");
       }, 2000);
     } catch (error: any) {
       console.error("Error deleting article:", error);
-      toast.error("Failed to delete article");
+      setAlertConfig({
+        title: "Error",
+        message: "Failed to delete article",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     }
   };
 

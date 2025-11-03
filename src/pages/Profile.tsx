@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
@@ -29,6 +28,15 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "success",
+  });
   const [isSaving, setIsSaving] = useState(false);
   const MAX_BIO_LENGTH = 120;
 
@@ -62,32 +70,52 @@ const Profile: React.FC = () => {
     try {
       setIsSaving(true);
       
-      // ⚠️ NOTE: /auth/profile endpoint is not available in backend API
-      // Profile update functionality needs to be implemented in backend
-      toast.error("Profile update endpoint is not available. Please contact administrator.");
-      setIsSaving(false);
-      return;
+      // Update avatar first if file is selected (separate API call)
+      if (avatarFile) {
+        try {
+          await blogApi.updateUserAvatar(avatarFile);
+          console.log('✅ Avatar uploaded successfully');
+        } catch (avatarError: any) {
+          console.error('❌ Avatar upload error:', avatarError);
+          const avatarErrorMessage = avatarError.response?.data?.error || avatarError.response?.data?.message || avatarError.message || "Failed to upload avatar";
+          throw new Error(avatarErrorMessage);
+        }
+      }
+
+      // Update profile data (name, username) - separate API call
+      try {
+        await blogApi.updateUserProfile({
+          name: profileData.name,
+          username: profileData.username,
+        });
+        console.log('✅ Profile updated successfully');
+      } catch (profileError: any) {
+        console.error('❌ Profile update error:', profileError);
+        // If avatar was uploaded successfully but profile update failed, still show error
+        const profileErrorMessage = profileError.response?.data?.error || profileError.response?.data?.message || profileError.message || "Failed to update profile";
+        throw new Error(profileErrorMessage);
+      }
+
+      // Refresh user data
+      await fetchUser();
       
-      // Code below is commented out until backend implements the endpoint
-      // const formData = new FormData();
-      // formData.append("name", profileData.name);
-      // formData.append("username", profileData.username);
-      // formData.append("email", profileData.email);
-      // formData.append("bio", profileData.bio || "");
-      // 
-      // if (avatarFile) {
-      //   formData.append("avatar", avatarFile);
-      // }
-      // 
-      // await blogApi.updateUserProfile(formData);
-      // await fetchUser();
-      // 
-      // setShowAlert(true);
-      // toast.success("Profile updated successfully");
-      // setTimeout(() => setShowAlert(false), 3000);
+      setAlertConfig({
+        title: "Saved profile",
+        message: "Your profile has been successfully updated",
+        variant: "success",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error(error.response?.data?.error || error.message || "Failed to update profile");
+      const errorMessage = error.message || error.response?.data?.error || error.response?.data?.message || "Failed to update profile";
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -103,14 +131,26 @@ const Profile: React.FC = () => {
         // Validate file type
         const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
         if (!allowedTypes.includes(file.type)) {
-          toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+          setAlertConfig({
+            title: "Invalid file type",
+            message: "Please upload a valid image file (JPEG, PNG, GIF, WebP).",
+            variant: "error",
+          });
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 5000);
           return;
         }
 
         // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-          toast.error("The file is too large. Please upload an image smaller than 5MB.");
+          setAlertConfig({
+            title: "File too large",
+            message: "The file is too large. Please upload an image smaller than 5MB.",
+            variant: "error",
+          });
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 5000);
           return;
         }
 
@@ -218,13 +258,13 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Alert */}
+      {/* Alert Notification */}
       {showAlert && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
           <Alert
-            variant="success"
-            title="Saved profile"
-            message="Your profile has been successfully updated"
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
             showCloseButton={true}
             onClose={() => setShowAlert(false)}
           />

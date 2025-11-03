@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { toast } from 'sonner';
+import { Alert } from '@/components/ui/Alert';
 import { blogApi, BlogPost, Author, Comment, formatDate } from '@/services/api';
 import { ArrowLeft, Heart, Copy, MessageCircle, Send } from 'lucide-react';
 import { HappyLight, CopyLight, FileLight, FacebookIcon, LinkedInIcon, TwitterIcon } from '@/icon/IconsAll';
@@ -11,7 +11,6 @@ import LoginDialog from '@/components/ui/LoginDialog';
 import { Button } from '@/components/ui/Button';
 import TextArea from '@/components/ui/TextArea';
 import CommentCard from '@/components/ui/CommentCard';
-import { Alert } from '@/components/ui/Alert';
 import { useAuth } from '@/context/authentication';
 
 const ArticleDetail: React.FC = () => {
@@ -27,6 +26,16 @@ const ArticleDetail: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [showCopyAlert, setShowCopyAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "success",
+  });
 
   // Scroll to top when component mounts or postId changes
   useEffect(() => {
@@ -104,10 +113,22 @@ const ArticleDetail: React.FC = () => {
         const newComment = await blogApi.postComment(parseInt(postId), comment.trim());
         setComments([...comments, newComment]);
         setComment('');
-        toast.success('Comment posted successfully!');
+        setAlertConfig({
+          title: "Comment posted",
+          message: "Your comment has been posted successfully",
+          variant: "success",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
       } catch (error) {
         console.error('Error posting comment:', error);
-        toast.error('Failed to post comment. Please try again.');
+        setAlertConfig({
+          title: "Error",
+          message: "Failed to post comment. Please try again.",
+          variant: "error",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
       } finally {
         setCommentsLoading(false);
       }
@@ -327,6 +348,19 @@ const ArticleDetail: React.FC = () => {
             title="Copied!"
             message="This article has been copied to your clipboard."
             onClose={() => setShowCopyAlert(false)}
+          />
+        </div>
+      )}
+
+      {/* Alert Notification */}
+      {showAlert && (
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+          <Alert
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            showCloseButton={true}
+            onClose={() => setShowAlert(false)}
           />
         </div>
       )}

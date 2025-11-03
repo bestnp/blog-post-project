@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -30,9 +29,11 @@ const CategoryManagement: React.FC = () => {
   const [alertConfig, setAlertConfig] = useState<{
     title: string;
     message: string;
+    variant: "success" | "error";
   }>({
     title: "",
     message: "",
+    variant: "success",
   });
 
   // Fetch categories from API
@@ -47,7 +48,13 @@ const CategoryManagement: React.FC = () => {
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      toast.error("Failed to load categories");
+      setAlertConfig({
+        title: "Error",
+        message: "Failed to load categories",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setLoading(false);
     }
@@ -75,13 +82,19 @@ const CategoryManagement: React.FC = () => {
       setAlertConfig({
         title: "Create category",
         message: "Category has been successfully created",
+        variant: "success",
       });
       setShowAlert(true);
-      toast.success("Category created successfully");
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error("Error creating category:", error);
-      toast.error(error.response?.data?.error || "Failed to create category");
+      setAlertConfig({
+        title: "Error",
+        message: error.response?.data?.error || "Failed to create category",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     }
   };
 
@@ -108,13 +121,19 @@ const CategoryManagement: React.FC = () => {
       setAlertConfig({
         title: "Edit category",
         message: "Category has been successfully updated",
+        variant: "success",
       });
       setShowAlert(true);
-      toast.success("Category updated successfully");
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error("Error updating category:", error);
-      toast.error(error.response?.data?.error || "Failed to update category");
+      setAlertConfig({
+        title: "Error",
+        message: error.response?.data?.error || "Failed to update category",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     }
   };
 
@@ -131,10 +150,22 @@ const CategoryManagement: React.FC = () => {
       setCategories(categories.filter((cat) => cat.id !== categoryToDelete));
       setShowDeleteModal(false);
       setCategoryToDelete(null);
-      toast.success("Category deleted successfully");
+      setAlertConfig({
+        title: "Delete category",
+        message: "Category has been successfully deleted",
+        variant: "success",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error("Error deleting category:", error);
-      toast.error(error.response?.data?.error || "Failed to delete category");
+      setAlertConfig({
+        title: "Error",
+        message: error.response?.data?.error || "Failed to delete category",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     }
   };
 
@@ -236,11 +267,11 @@ const CategoryManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Alert */}
+      {/* Alert Notification */}
       {showAlert && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
           <Alert
-            variant="success"
+            variant={alertConfig.variant}
             title={alertConfig.title}
             message={alertConfig.message}
             showCloseButton={true}

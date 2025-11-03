@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import NavBar from '@/components/ui/NavBar';
+import { Alert } from '@/components/ui/Alert';
 import { DoneRoundLight } from '@/icon/IconsAll';
 import { useAuth } from '@/context/authentication';
-import { toast } from 'sonner';
 
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +21,16 @@ const SignUp: React.FC = () => {
     password?: string;
   }>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "error",
+  });
 
   // Clear any previous errors when component mounts
   useEffect(() => {
@@ -63,7 +73,13 @@ const SignUp: React.FC = () => {
     
     // Validate required fields
     if (!formData.fullName || !formData.username || !formData.email || !formData.password) {
-      toast.error('Please fill in all fields');
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please fill in all fields",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
 
@@ -101,7 +117,13 @@ const SignUp: React.FC = () => {
           email: 'Email is already taken, Please try another email.'
         }));
       } else {
-        toast.error(result.error);
+        setAlertConfig({
+          title: "Registration error",
+          message: result.error,
+          variant: "error",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
       }
     } else {
       // Show success modal
@@ -260,6 +282,19 @@ const SignUp: React.FC = () => {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Alert Notification */}
+      {showAlert && (
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+          <Alert
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            showCloseButton={true}
+            onClose={() => setShowAlert(false)}
+          />
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { toast } from "sonner";
 import NavBar from "@/components/ui/NavBar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -69,6 +68,15 @@ const MemberProfile: React.FC = () => {
   });
 
   const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "success",
+  });
   const [showResetModal, setShowResetModal] = useState(false);
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
@@ -89,31 +97,52 @@ const MemberProfile: React.FC = () => {
     try {
       setIsSaving(true);
       
-      // ⚠️ NOTE: /auth/profile endpoint is not available in backend API
-      // Profile update functionality needs to be implemented in backend
-      toast.error("Profile update endpoint is not available. Please contact administrator.");
-      setIsSaving(false);
-      return;
+      // Update avatar first if file is selected (separate API call)
+      if (avatarFile) {
+        try {
+          await blogApi.updateUserAvatar(avatarFile);
+          console.log('✅ Avatar uploaded successfully');
+        } catch (avatarError: any) {
+          console.error('❌ Avatar upload error:', avatarError);
+          const avatarErrorMessage = avatarError.response?.data?.error || avatarError.response?.data?.message || avatarError.message || "Failed to upload avatar";
+          throw new Error(avatarErrorMessage);
+        }
+      }
+
+      // Update profile data (name, username) - separate API call
+      try {
+        await blogApi.updateUserProfile({
+          name: profileData.name,
+          username: profileData.username,
+        });
+        console.log('✅ Profile updated successfully');
+      } catch (profileError: any) {
+        console.error('❌ Profile update error:', profileError);
+        // If avatar was uploaded successfully but profile update failed, still show error
+        const profileErrorMessage = profileError.response?.data?.error || profileError.response?.data?.message || profileError.message || "Failed to update profile";
+        throw new Error(profileErrorMessage);
+      }
+
+      // Refresh user data
+      await fetchUser();
       
-      // Code below is commented out until backend implements the endpoint
-      // const formData = new FormData();
-      // formData.append("name", profileData.name);
-      // formData.append("username", profileData.username);
-      // formData.append("email", profileData.email);
-      // 
-      // if (avatarFile) {
-      //   formData.append("avatar", avatarFile);
-      // }
-      // 
-      // await blogApi.updateUserProfile(formData);
-      // await fetchUser();
-      // 
-      // setShowAlert(true);
-      // toast.success("Profile updated successfully");
-      // setTimeout(() => setShowAlert(false), 3000);
+      setAlertConfig({
+        title: "Saved profile",
+        message: "Your profile has been successfully updated",
+        variant: "success",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error(error.response?.data?.error || error.message || "Failed to update profile");
+      const errorMessage = error.message || error.response?.data?.error || error.response?.data?.message || "Failed to update profile";
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -121,17 +150,35 @@ const MemberProfile: React.FC = () => {
 
   const handleResetPassword = () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      toast.error('Please fill in all fields');
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please fill in all fields",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
     if (passwordData.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters');
+      setAlertConfig({
+        title: "Validation error",
+        message: "New password must be at least 6 characters",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New password and confirm password do not match');
+      setAlertConfig({
+        title: "Validation error",
+        message: "New password and confirm password do not match",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
@@ -154,13 +201,23 @@ const MemberProfile: React.FC = () => {
         newPassword: "",
         confirmPassword: "",
       });
+      setAlertConfig({
+        title: "Password updated",
+        message: "Your password has been successfully updated",
+        variant: "success",
+      });
       setShowAlert(true);
-      toast.success('Password updated successfully');
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error('Error resetting password:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Failed to reset password';
-      toast.error(errorMessage);
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -176,14 +233,26 @@ const MemberProfile: React.FC = () => {
         // Validate file type
         const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
         if (!allowedTypes.includes(file.type)) {
-          toast.error("Please upload a valid image file (JPEG, PNG, GIF, WebP).");
+          setAlertConfig({
+            title: "Invalid file type",
+            message: "Please upload a valid image file (JPEG, PNG, GIF, WebP).",
+            variant: "error",
+          });
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 5000);
           return;
         }
 
         // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-          toast.error("The file is too large. Please upload an image smaller than 5MB.");
+          setAlertConfig({
+            title: "File too large",
+            message: "The file is too large. Please upload an image smaller than 5MB.",
+            variant: "error",
+          });
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 5000);
           return;
         }
 
@@ -390,13 +459,13 @@ const MemberProfile: React.FC = () => {
         backdropOpacity={40}
       />
 
-      {/* Success Alert */}
+      {/* Alert Notification */}
       {showAlert && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
           <Alert
-            variant="success"
-            title={activeTab === "profile" ? "Saved profile" : "Password reset"}
-            message={activeTab === "profile" ? "Your profile has been successfully updated" : "Your password has been successfully reset"}
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
             showCloseButton={true}
             onClose={() => setShowAlert(false)}
           />

@@ -39,7 +39,7 @@ interface AuthContextType {
   logout: () => void;
   register: (data: RegisterData) => Promise<{ error?: string } | void>;
   isAuthenticated: boolean;
-  fetchUser: () => Promise<void>;
+  fetchUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

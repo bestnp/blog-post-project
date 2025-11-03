@@ -1,6 +1,5 @@
 import "./App.css";
 import { Routes, Route } from 'react-router-dom';
-import { Toaster } from 'sonner';
 import { useAuth } from '@/context/authentication';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AuthenticationRoute from './components/auth/AuthenticationRoute';
@@ -38,7 +37,6 @@ function App() {
   const { isAuthenticated, state } = useAuth();
   return (
     <div className="min-h-screen bg-brown-100">
-      <Toaster position="bottom-right" richColors />
       <Routes>
         <Route path="/" element={
           <>

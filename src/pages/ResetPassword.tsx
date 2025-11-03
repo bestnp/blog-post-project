@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { Alert } from "@/components/ui/Alert";
 import { authApi } from "@/services/api";
-import { toast } from "sonner";
 
 interface PasswordData {
   currentPassword: string;
@@ -22,6 +21,15 @@ const ResetPassword: React.FC = () => {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "success",
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePasswordChange = (field: keyof PasswordData, value: string) => {
@@ -34,17 +42,35 @@ const ResetPassword: React.FC = () => {
   const handleResetPassword = () => {
     // Validate fields
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      toast.error('Please fill in all fields');
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please fill in all fields",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
     if (passwordData.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters');
+      setAlertConfig({
+        title: "Validation error",
+        message: "New password must be at least 6 characters",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New password and confirm password do not match');
+      setAlertConfig({
+        title: "Validation error",
+        message: "New password and confirm password do not match",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
 
@@ -70,13 +96,23 @@ const ResetPassword: React.FC = () => {
       });
 
       // Show success alert
+      setAlertConfig({
+        title: "Password reset",
+        message: "Your password has been successfully reset",
+        variant: "success",
+      });
       setShowAlert(true);
-      toast.success('Password updated successfully');
-      setTimeout(() => setShowAlert(false), 3000);
+      setTimeout(() => setShowAlert(false), 5000);
     } catch (error: any) {
       console.error('Error resetting password:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Failed to reset password';
-      toast.error(errorMessage);
+      setAlertConfig({
+        title: "Error",
+        message: errorMessage,
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -157,13 +193,13 @@ const ResetPassword: React.FC = () => {
         backdropOpacity={40}
       />
 
-      {/* Success Alert */}
+      {/* Alert Notification */}
       {showAlert && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
           <Alert
-            variant="success"
-            title="Password reset"
-            message="Your password has been successfully reset"
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
             showCloseButton={true}
             onClose={() => setShowAlert(false)}
           />

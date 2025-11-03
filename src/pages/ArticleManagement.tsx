@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import AdminSidebar from "@/components/ui/AdminSidebar";
+import { Alert } from "@/components/ui/Alert";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -24,6 +24,16 @@ const ArticleManagement: React.FC = () => {
   const [articleToDelete, setArticleToDelete] = useState<number | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    variant: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    variant: "success",
+  });
 
   const fetchArticles = async () => {
     try {
@@ -63,7 +73,13 @@ const ArticleManagement: React.FC = () => {
       setArticles(mappedArticles);
     } catch (error) {
       console.error("Error fetching articles:", error);
-      toast.error("Failed to load articles");
+      setAlertConfig({
+        title: "Error",
+        message: "Failed to load articles",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setLoading(false);
     }
@@ -87,13 +103,25 @@ const ArticleManagement: React.FC = () => {
     if (articleToDelete !== null) {
       try {
         await blogApi.deletePost(articleToDelete);
-        toast.success("Article deleted successfully");
+        setAlertConfig({
+          title: "Article deleted",
+          message: "Article has been successfully deleted",
+          variant: "success",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
         setArticles(articles.filter(article => article.id !== articleToDelete));
         setShowDeleteModal(false);
         setArticleToDelete(null);
       } catch (error) {
         console.error("Error deleting article:", error);
-        toast.error("Failed to delete article");
+        setAlertConfig({
+          title: "Error",
+          message: "Failed to delete article",
+          variant: "error",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
       }
     }
   };
@@ -268,6 +296,19 @@ const ArticleManagement: React.FC = () => {
         cancelText="Cancel"
         backdropOpacity={40}
       />
+
+      {/* Alert Notification */}
+      {showAlert && (
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+          <Alert
+            variant={alertConfig.variant}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            showCloseButton={true}
+            onClose={() => setShowAlert(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };

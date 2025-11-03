@@ -417,55 +417,48 @@ export const blogApi = {
   
   // ดึงข้อมูล categories
   getCategories: async (): Promise<{ id: number; name: string }[]> => {
-    // ⚠️ Endpoint not available in backend
-    console.warn('Categories endpoint not available in backend API');
-    // Return empty array or throw error based on your needs
-    return [];
-    // try {
-    //   const response = await axios.get(`${API_BASE_URL}/categories`);
-    //   return response.data;
-    // } catch (error) {
-    //   console.error('Error fetching categories:', error);
-    //   throw error;
-    // }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/categories`);
+      // Backend returns { data: [...] }
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
   },
 
   // สร้าง category
   createCategory: async (name: string): Promise<{ id: number; name: string }> => {
-    // ⚠️ Endpoint not available in backend
-    throw new Error('Create category endpoint not available in backend API');
-    // try {
-    //   const response = await axios.post(`${API_BASE_URL}/categories`, { name });
-    //   return response.data;
-    // } catch (error) {
-    //   console.error('Error creating category:', error);
-    //   throw error;
-    // }
+    try {
+      const response = await axios.post(`${API_BASE_URL}/categories`, { name });
+      // Backend returns { message: "...", data: {...} }
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
   },
 
   // อัพเดท category
   updateCategory: async (id: number, name: string): Promise<{ id: number; name: string }> => {
-    // ⚠️ Endpoint not available in backend
-    throw new Error('Update category endpoint not available in backend API');
-    // try {
-    //   const response = await axios.put(`${API_BASE_URL}/categories/${id}`, { name });
-    //   return response.data;
-    // } catch (error) {
-    //   console.error('Error updating category:', error);
-    //   throw error;
-    // }
+    try {
+      const response = await axios.put(`${API_BASE_URL}/categories/${id}`, { name });
+      // Backend returns { message: "..." } - return updated category manually
+      return { id, name };
+    } catch (error) {
+      console.error('Error updating category:', error);
+      throw error;
+    }
   },
 
   // ลบ category
   deleteCategory: async (id: number): Promise<void> => {
-    // ⚠️ Endpoint not available in backend
-    throw new Error('Delete category endpoint not available in backend API');
-    // try {
-    //   await axios.delete(`${API_BASE_URL}/categories/${id}`);
-    // } catch (error) {
-    //   console.error('Error deleting category:', error);
-    //   throw error;
-    // }
+    try {
+      await axios.delete(`${API_BASE_URL}/categories/${id}`);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      throw error;
+    }
   },
 
   // ดึงข้อมูล user profile
@@ -480,24 +473,42 @@ export const blogApi = {
     }
   },
 
-  // อัพเดท user profile
-  // ⚠️ NOTE: /auth/profile endpoint is not available in backend
-  // User profile update might need to be implemented differently
-  updateUserProfile: async (formData: FormData): Promise<any> => {
-    // ⚠️ Endpoint not available in backend
-    throw new Error('Update user profile endpoint not available in backend API');
-    // For now, this endpoint doesn't exist - may need backend implementation
-    // try {
-    //   const response = await axios.put(`${API_BASE_URL}/auth/profile`, formData, {
-    //     headers: {
-    //       'Content-Type': 'multipart/form-data',
-    //     },
-    //   });
-    //   return response.data;
-    // } catch (error) {
-    //   console.error('Error updating user profile:', error);
-    //   throw error;
-    // }
+  // อัพเดท user profile (name, username)
+  updateUserProfile: async (data: { name?: string; username?: string }): Promise<any> => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/profiles`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  },
+
+  // อัพเดท user avatar
+  updateUserAvatar: async (avatarFile: File): Promise<any> => {
+    try {
+      const formData = new FormData();
+      // Backend expects field name 'avatarFile'
+      formData.append('avatarFile', avatarFile);
+      
+      // สำหรับ multipart/form-data ไม่ต้องระบุ Content-Type ให้ axios จัดการเอง
+      // เพื่อให้ axios ตั้งค่า boundary ให้ถูกต้อง
+      const response = await axios.put(`${API_BASE_URL}/profiles/avatar`, formData, {
+        headers: {
+          // ไม่ต้องระบุ Content-Type - ให้ axios จัดการเองสำหรับ multipart/form-data
+          // 'Content-Type': 'multipart/form-data', // ❌ ไม่ควรระบุ - จะทำให้ boundary ไม่ถูกต้อง
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating user avatar:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+      });
+      throw error;
+    }
   },
 
   // GET /profiles - Get user profile (public endpoint)
