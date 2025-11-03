@@ -11,6 +11,7 @@ import ArticleDetail from './pages/ArticleDetail';
 import SearchResults from './pages/SearchResults';
 import NotFound from './pages/NotFound';
 import SignUp from './pages/SignUp';
+import SignUpSuccess from './pages/SignUpSuccess';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import MemberProfile from './pages/MemberProfile';
@@ -71,6 +72,10 @@ function App() {
               <SignUp />
             </AuthenticationRoute>
           }
+        />
+        <Route
+          path="/sign-up/success"
+          element={<SignUpSuccess />}
         />
 
         {/* เส้นทางที่เฉพาะผู้ใช้ทั่วไปที่ล็อกอินแล้วเข้าถึงได้ */}
