@@ -149,139 +149,146 @@ const ArticleManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       {/* Sidebar */}
       <AdminSidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-h3 font-bold text-brown-600">Article management</h1>
-          <Button
-            onClick={handleCreateArticle}
-            variant="default"
-            size="default"
-            className="!bg-brown-600 hover:!bg-brown-500"
-          >
-            <AddRoundLight className="w-5 h-5" />
-            Create article
-          </Button>
-        </div>
-
-        {/* Divider */}
-        <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
-
-        {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1 max-w-[300px]">
-            <Input
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClear={() => setSearchQuery("")}
-              showSearchIcon={true}
-              showClearButton={true}
-            />
+      <div className="flex-1 w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl">
+          {/* Header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
+              <h1 className="text-h4 sm:text-h3 font-bold text-brown-600">Article management</h1>
+              <p className="text-sm text-brown-400">Create, edit, and review all published content.</p>
+            </div>
+            <Button
+              onClick={handleCreateArticle}
+              variant="default"
+              size="default"
+              className="!bg-brown-600 hover:!bg-brown-500 w-full sm:w-auto"
+            >
+              <AddRoundLight className="w-5 h-5" />
+              Create article
+            </Button>
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
-          >
-            <option value="all">Status</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-          </select>
+          {/* Divider */}
+          <div className="h-[1px] bg-brown-300 mb-6 -mx-4 sm:-mx-6 lg:-mx-8"></div>
 
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
-          >
-            <option value="all">Category</option>
-            <option value="cat">Cat</option>
-            <option value="general">General</option>
-            <option value="inspiration">Inspiration</option>
-          </select>
-        </div>
+          {/* Filters */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div className="w-full sm:max-w-xs">
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClear={() => setSearchQuery("")}
+                showSearchIcon={true}
+                showClearButton={true}
+              />
+            </div>
 
-        {/* Table */}
-        <div className="bg-brown-50 rounded-lg border border-brown-300 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-brown-100">
-              <tr>
-                <th className="text-left px-6 py-4 text-body-md font-medium text-brown-500">
-                  Article title
-                </th>
-                <th className="text-left px-6 py-4 text-body-md font-medium text-brown-500 w-[200px]">
-                  Category
-                </th>
-                <th className="text-left px-6 py-4 text-body-md font-medium text-brown-500 w-[150px]">
-                  Status
-                </th>
-                <th className="text-right px-6 py-4 text-body-md font-medium text-brown-500 w-[100px]">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
-                    Loading...
-                  </td>
-                </tr>
-              ) : articles.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
-                    No articles found
-                  </td>
-                </tr>
-              ) : (
-                articles.map((article, index) => (
-                <tr
-                  key={article.id}
-                  className={`
-                    border-t border-brown-300 hover:bg-brown-100/50 transition-colors
-                  `}
-                >
-                  <td className="px-6 py-4 text-body-md text-brown-600">
-                    {article.title}
-                  </td>
-                  <td className="px-6 py-4 text-body-md text-brown-600">
-                    {article.category}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-body-md font-medium flex items-center gap-1 ${getStatusColor(article.status)}`}>
-                      <span className="w-2 h-2 rounded-full bg-current"></span>
-                      {article.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(article.id)}
-                        className="p-2 hover:bg-brown-200 rounded-md transition-colors"
-                        title="Edit"
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
+              >
+                <option value="all">Status</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
+              >
+                <option value="all">Category</option>
+                <option value="cat">Cat</option>
+                <option value="general">General</option>
+                <option value="inspiration">Inspiration</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-brown-50 rounded-lg border border-brown-300 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead className="bg-brown-100">
+                  <tr>
+                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500">
+                      Article title
+                    </th>
+                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[200px]">
+                      Category
+                    </th>
+                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[150px]">
+                      Status
+                    </th>
+                    <th className="text-right px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[120px]">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
+                        Loading...
+                      </td>
+                    </tr>
+                  ) : articles.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
+                        No articles found
+                      </td>
+                    </tr>
+                  ) : (
+                    articles.map((article) => (
+                      <tr
+                        key={article.id}
+                        className="border-t border-brown-300 hover:bg-brown-100/50 transition-colors"
                       >
-                        <EditLight className="w-5 h-5 text-brown-400" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(article.id)}
-                        className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                        title="Delete"
-                      >
-                        <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                        <td className="px-4 sm:px-6 py-4 text-body-sm sm:text-body-md text-brown-600">
+                          {article.title}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 text-body-sm sm:text-body-md text-brown-600">
+                          {article.category}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <span className={`text-body-sm sm:text-body-md font-medium inline-flex items-center gap-1 ${getStatusColor(article.status)}`}>
+                            <span className="w-2 h-2 rounded-full bg-current"></span>
+                            {article.status}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEdit(article.id)}
+                              className="p-2 hover:bg-brown-200 rounded-md transition-colors"
+                              title="Edit"
+                            >
+                              <EditLight className="w-5 h-5 text-brown-400" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(article.id)}
+                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                              title="Delete"
+                            >
+                              <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -299,7 +306,7 @@ const ArticleManagement: React.FC = () => {
 
       {/* Alert Notification */}
       {showAlert && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+        <div className="fixed bottom-4 inset-x-4 z-50 mx-auto w-auto max-w-sm animate-in slide-in-from-bottom lg:inset-x-auto lg:right-6">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}

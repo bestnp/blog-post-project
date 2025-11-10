@@ -201,22 +201,26 @@ const CreateArticle: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-[800px] mx-auto p-8">
+      <div className="flex-1 w-full overflow-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-3xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Create article</h1>
-            <div className="flex gap-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
+            <div>
+              <h1 className="text-h4 sm:text-h3 font-bold text-brown-600">Create article</h1>
+              <p className="text-sm text-brown-400">Upload a thumbnail, write your content, then save as draft or publish immediately.</p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 onClick={handleSaveAsDraft}
                 variant="secondary"
                 size="default"
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 {isLoading ? "Saving..." : "Save as draft"}
               </Button>
@@ -224,7 +228,7 @@ const CreateArticle: React.FC = () => {
                 onClick={handleSaveAndPublish}
                 variant="default"
                 size="default"
-                className="!bg-brown-600 hover:!bg-brown-500"
+                className="!bg-brown-600 hover:!bg-brown-500 w-full sm:w-auto"
                 disabled={isLoading}
               >
                 {isLoading ? "Publishing..." : "Save and publish"}
@@ -233,7 +237,7 @@ const CreateArticle: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
+          <div className="h-[1px] bg-brown-300 mb-6 -mx-4 sm:-mx-6 lg:-mx-8"></div>
 
           {/* Form */}
           <div className="space-y-6">
@@ -244,7 +248,7 @@ const CreateArticle: React.FC = () => {
               </label>
               <div className="relative">
                 {thumbnailPreview ? (
-                  <div className="relative w-full h-[300px] bg-brown-100 rounded-lg border border-brown-300 overflow-hidden">
+                  <div className="relative w-full h-[220px] sm:h-[300px] bg-brown-100 rounded-lg border border-brown-300 overflow-hidden">
                     <img
                       src={thumbnailPreview}
                       alt="Thumbnail preview"
@@ -264,9 +268,9 @@ const CreateArticle: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="w-full h-[300px] bg-brown-100 rounded-lg border border-brown-300 flex flex-col items-center justify-center">
+                  <div className="w-full h-[220px] sm:h-[300px] bg-brown-100 rounded-lg border border-brown-300 flex flex-col items-center justify-center text-center px-6">
                     <ImgBoxLight className="w-16 h-16 text-brown-400 mb-4" />
-                    <p className="text-body-md text-brown-400 mb-4">
+                    <p className="text-body-sm sm:text-body-md text-brown-400 mb-4">
                       Upload thumbnail image
                     </p>
                   </div>
@@ -284,6 +288,7 @@ const CreateArticle: React.FC = () => {
                     onClick={() => document.querySelector('input[type="file"]')?.click()}
                     variant="secondary"
                     size="default"
+                    className="w-full sm:w-auto"
                   >
                     Upload thumbnail image
                   </Button>
@@ -370,9 +375,9 @@ const CreateArticle: React.FC = () => {
         </div>
       </div>
 
-      {/* Alert Notification - Fixed at bottom right */}
+      {/* Alert Notification */}
       {showAlert && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+        <div className="fixed bottom-4 inset-x-4 z-50 mx-auto w-auto max-w-sm animate-in slide-in-from-bottom lg:inset-x-auto lg:right-6">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}

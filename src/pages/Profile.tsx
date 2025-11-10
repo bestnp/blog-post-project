@@ -170,16 +170,19 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto">
+      <div className="flex-1 w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-4xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Profile</h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
+              <h1 className="text-h4 sm:text-h3 font-bold text-brown-600">Profile</h1>
+              <p className="text-sm text-brown-400 sm:text-body-sm">Update your personal information and avatar</p>
+            </div>
             <Button
               onClick={handleSave}
               variant="default"
@@ -192,28 +195,32 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
+          <div className="h-[1px] bg-brown-300 mb-6 -mx-4 sm:-mx-6 lg:-mx-8"></div>
 
           {/* Content */}
-          <div>
+          <div className="space-y-8">
             {/* Profile Picture Section */}
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <img 
                 src={profileData.avatar}
-                alt={profileData.name}
-                className="w-[60px] h-[60px] rounded-full object-cover border-2 border-brown-200"
+                alt={profileData.name || "Profile avatar"}
+                className="w-[72px] h-[72px] rounded-full object-cover border-2 border-brown-200 mx-auto sm:mx-0"
               />
-              <Button
-                onClick={handleUploadPicture}
-                variant="secondary"
-                size="default"
-              >
-                Upload profile picture
-              </Button>
+              <div className="text-center sm:text-left">
+                <p className="text-body-md text-brown-500 mb-2">Profile picture</p>
+                <Button
+                  onClick={handleUploadPicture}
+                  variant="secondary"
+                  size="default"
+                  className="w-full sm:w-auto"
+                >
+                  Upload profile picture
+                </Button>
+              </div>
             </div>
 
             {/* Form Fields */}
-            <div className="space-y-6 max-w-[600px]">
+            <div className="space-y-6">
               <Input
                 label="Name"
                 value={profileData.name}
@@ -260,7 +267,7 @@ const Profile: React.FC = () => {
 
       {/* Alert Notification */}
       {showAlert && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+        <div className="fixed bottom-4 inset-x-4 z-50 mx-auto w-auto max-w-sm animate-in slide-in-from-bottom lg:inset-x-auto lg:right-6">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}

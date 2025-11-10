@@ -170,21 +170,24 @@ const CategoryManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto">
+      <div className="flex-1 w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-4xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Category management</h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
+              <h1 className="text-h4 sm:text-h3 font-bold text-brown-600">Category management</h1>
+              <p className="text-sm text-brown-400">Create, rename, and remove categories used across articles.</p>
+            </div>
             <Button
               onClick={handleCreateCategory}
               variant="default"
               size="default"
-              className="!bg-brown-600 hover:!bg-brown-500 flex items-center gap-2"
+              className="!bg-brown-600 hover:!bg-brown-500 flex items-center gap-2 w-full sm:w-auto"
             >
               <AddRoundLight className="w-5 h-5" />
               Create category
@@ -192,7 +195,7 @@ const CategoryManagement: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
+          <div className="h-[1px] bg-brown-300 mb-6 -mx-4 sm:-mx-6 lg:-mx-8"></div>
 
           {/* Search */}
           <div className="mb-6">
@@ -207,69 +210,71 @@ const CategoryManagement: React.FC = () => {
 
           {/* Categories Table */}
           <div className="bg-white rounded-lg border border-brown-300 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-brown-300">
-                  <th className="text-left px-6 py-4">
-                    <span className="text-body-lg font-semibold text-purple-600 border-b-2 border-purple-600 pb-1">
-                      Category
-                    </span>
-                  </th>
-                  <th className="w-[100px]"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
-                      Loading...
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
+                <thead>
+                  <tr className="border-b border-brown-300">
+                    <th className="text-left px-4 sm:px-6 py-4">
+                      <span className="text-body-md sm:text-body-lg font-semibold text-purple-600 border-b-2 border-purple-600 pb-1">
+                        Category
+                      </span>
+                    </th>
+                    <th className="w-[100px]"></th>
                   </tr>
-                ) : filteredCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
-                      No categories found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCategories.map((category) => (
-                    <tr
-                      key={category.id}
-                      className="border-b border-brown-200 hover:bg-brown-50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="text-body-md text-brown-600">{category.name}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(category)}
-                            className="p-2 hover:bg-brown-100 rounded-md transition-colors"
-                            title="Edit"
-                          >
-                            <EditLight className="w-5 h-5 text-brown-400" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(category.id)}
-                            className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                            title="Delete"
-                          >
-                            <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
-                          </button>
-                        </div>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
+                        Loading...
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : filteredCategories.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
+                        No categories found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCategories.map((category) => (
+                      <tr
+                        key={category.id}
+                        className="border-b border-brown-200 hover:bg-brown-50 transition-colors"
+                      >
+                        <td className="px-4 sm:px-6 py-4">
+                          <span className="text-body-sm sm:text-body-md text-brown-600">{category.name}</span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleEdit(category)}
+                              className="p-2 hover:bg-brown-100 rounded-md transition-colors"
+                              title="Edit"
+                            >
+                              <EditLight className="w-5 h-5 text-brown-400" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(category.id)}
+                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                              title="Delete"
+                            >
+                              <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Alert Notification */}
       {showAlert && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+        <div className="fixed bottom-4 inset-x-4 z-50 mx-auto w-auto max-w-sm animate-in slide-in-from-bottom lg:inset-x-auto lg:right-6">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}
