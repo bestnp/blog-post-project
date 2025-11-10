@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
+import { EyeLight, EyeSlashLight } from "@/icon/IconsAll";
 
 type InputState = "default" | "focus" | "error" | "completed" | "disabled";
 
@@ -35,6 +36,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ...props 
   }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    
+    const isPassword = type === "password";
+    const inputType = isPassword && showPassword ? "text" : type;
     
     const isDisabled = state === "disabled" || props.disabled;
     const isError = state === "error";
@@ -43,6 +48,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     
     const handleClear = () => {
       onClear?.();
+    };
+
+    const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
     };
 
     const getInputStyles = () => {
@@ -121,27 +130,48 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           <input
             ref={ref}
-            type={type}
+            type={inputType}
             value={value}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             disabled={isDisabled}
             className={cn(
               getInputStyles(),
-              showSearchIcon && "pr-10",
-              showClearButton && value && "pr-10",
+              showSearchIcon && type !== "password" && !isPassword && "pl-10",
+              (showClearButton && value && !isPassword) && "pr-10",
+              isPassword && "pr-10",
               className
             )}
             {...props}
           />
           
-          {showSearchIcon && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          {showSearchIcon && type !== "password" && !isPassword && (
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
               <Search className={cn("h-4 w-4", getIconColor())} />
             </div>
           )}
           
-          {showClearButton && value && !isDisabled && (
+          {isPassword && (
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className={cn(
+                "absolute right-3 top-1/2 transform -translate-y-1/2",
+                "hover:text-brown-600 transition-colors cursor-pointer",
+                "bg-transparent border-none outline-none",
+                "focus:outline-none focus:ring-0"
+              )}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeSlashLight className="w-5 h-5" currentColor="currentColor" />
+              ) : (
+                <EyeLight className="w-5 h-5" currentColor="currentColor" />
+              )}
+            </button>
+          )}
+          
+          {showClearButton && value && !isDisabled && !isPassword && (
             <button
               type="button"
               onClick={handleClear}

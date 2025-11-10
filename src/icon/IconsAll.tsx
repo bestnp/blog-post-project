@@ -31,5 +31,7 @@ export { default as StarLight } from "@/icon/StarLight";
 export { default as TimeLight } from "@/icon/TimeLight";
 export { default as TrashLight } from "@/icon/TrashLight";
 export { default as UserDuotone } from "@/icon/UserDuotone";
+export { default as EyeSlashLight } from "@/icon/EyeSlashLight";
+export { default as EyeLight } from "@/icon/EyeLight";
 
 
