@@ -19,20 +19,7 @@ import Notification from './pages/Notification';
 import ResetPassword from './pages/ResetPassword';
 import ArticleManagement from './pages/ArticleManagement';
 import CreateArticle from './pages/CreateArticle';
-import EditArticle from './pages/EditArticle';
 import CategoryManagement from './pages/CategoryManagement';
-import IconTest from './pages/IconTest';
-import ButtonTest from './pages/ButtonTest';
-import TabTest from './pages/TabTest';
-import AlertTest from './pages/AlertTest';
-import InputTest from './pages/InputTest';
-import TextAreaTest from './pages/TextAreaTest';
-import CommentTest from './pages/CommentTest';
-import ColorTest from './pages/ColorTest';
-import FontSizeTest from './pages/FontSizeTest';
-import ProfileDropdownTest from './pages/ProfileDropdownTest';
-import NavBarTest from './pages/NavBarTest';
-import NotificationTest from './pages/NotificationTest';
 
 function App() {
   const { isAuthenticated, state } = useAuth();
@@ -147,7 +134,7 @@ function App() {
           }
         />
         <Route
-          path="/admin/articles/create"
+          path="/admin/articles/create/:id?"
           element={
             <ProtectedRoute
               isLoading={state.getUserLoading}
@@ -156,19 +143,6 @@ function App() {
               requiredRole="admin"
             >
               <CreateArticle />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/articles/edit/:id"
-          element={
-            <ProtectedRoute
-              isLoading={state.getUserLoading}
-              isAuthenticated={isAuthenticated}
-              userRole={state.user?.role}
-              requiredRole="admin"
-            >
-              <EditArticle />
             </ProtectedRoute>
           }
         />
@@ -185,18 +159,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/icon-test" element={<IconTest />} />
-        <Route path="/button-test" element={<ButtonTest />} />
-        <Route path="/tab-test" element={<TabTest />} />
-        <Route path="/alert-test" element={<AlertTest />} />
-        <Route path="/input-test" element={<InputTest />} />
-        <Route path="/textarea-test" element={<TextAreaTest />} />
-        <Route path="/comment-test" element={<CommentTest />} />
-        <Route path="/color-test" element={<ColorTest />} />
-        <Route path="/fontsize-test" element={<FontSizeTest />} />
-        <Route path="/profile-dropdown-test" element={<ProfileDropdownTest />} />
-        <Route path="/navbar-test" element={<NavBarTest />} />
-        <Route path="/notification-test" element={<NotificationTest />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

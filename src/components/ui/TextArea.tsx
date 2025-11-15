@@ -1,117 +1,141 @@
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 
-type TextAreaState = "default" | "focus" | "completed";
-
-interface TextAreaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'disabled'> {
-  label?: string;
-  helpText?: string;
-  errorText?: string;
-  state?: TextAreaState;
+export interface CommentCardProps {
+  // User profile data
+  userProfile: {
+    name: string;
+    avatar?: string;
+    avatarAlt?: string;
+  };
+  
+  // Comment data
+  comment: {
+    id: string;
+    text: string;
+    createdAt: string | Date;
+  };
+  
+  // Optional styling
+  className?: string;
   containerClassName?: string;
-  labelClassName?: string;
-  helpTextClassName?: string;
+  avatarClassName?: string;
+  nameClassName?: string;
+  timestampClassName?: string;
+  textClassName?: string;
+  
+  // Optional click handlers
+  onUserClick?: (userId: string) => void;
+  onCommentClick?: (commentId: string) => void;
 }
 
-const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ 
-    className, 
-    label,
-    helpText,
-    errorText,
-    state = "default",
-    containerClassName,
-    labelClassName,
-    helpTextClassName,
-    value,
-    ...props 
-  }, ref) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const [textareaValue, setTextareaValue] = useState(value || "");
-    
-    const isError = !!errorText;
-    const isCompleted = state === "completed";
-    const isFocusedState = state === "focus" || (isFocused && state === "default");
-    
-    const getTextAreaStyles = () => {
-      const baseStyles = "min-h-[100px] w-full rounded-[8px] border bg-white px-5 py-4 pb-8 pr-8 text-current outline-none transition-colors resize-y";
-      
-      if (isError) {
-        return cn(
-          baseStyles,
-          "border-red text-red placeholder:text-red-400",
-          "focus:border-red focus:ring-2 focus:ring-red-200"
-        );
-      }
-      
-      if (isFocusedState) {
-        return cn(
-          baseStyles,
-          "border-brown-400 text-brown-400 placeholder:text-brown-400",
-          "focus:border-brown-400 focus:ring-2 focus:ring-brown-200"
-        );
-      }
-      
-      if (isCompleted) {
-        return cn(
-          baseStyles,
-          "border-brown-300 text-gray-900 placeholder:text-brown-500",
-          "focus:border-gray-600 focus:ring-2 focus:ring-gray-200"
-        );
-      }
-      
-      // Default state
-      return cn(
-        baseStyles,
-        "border-brown-300 text-gray-900 placeholder:text-brown-400",
-        "focus:border-gray-600 focus:ring-2 focus:ring-gray-200"
-      );
-    };
+const TextArea: React.FC<CommentCardProps> = ({
+  userProfile,
+  comment,
+  className,
+  containerClassName,
+  avatarClassName,
+  nameClassName,
+  timestampClassName,
+  textClassName,
+  onUserClick,
+  onCommentClick,
+}) => {
+  // Format timestamp
+  const formatTimestamp = (date: string | Date) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-    const getLabelStyles = () => {
-      return "text-brown-400";
-    };
+  const handleUserClick = () => {
+    if (onUserClick) {
+      onUserClick(userProfile.name);
+    }
+  };
 
-    const getHelpTextStyles = () => {
-      if (isError) {
-        return "text-red";
-      }
-      return "text-brown-400";
-    };
+  const handleCommentClick = () => {
+    if (onCommentClick) {
+      onCommentClick(comment.id);
+    }
+  };
 
-    return (
-      <div className={cn("space-y-1", containerClassName)}>
-        {label && (
-          <label className={cn("text-body-lg font-medium", getLabelStyles(), labelClassName)}>
-            {label}
-          </label>
-        )}
-        
-        <div className="textarea-resize-hint">
-          <textarea
-            ref={ref}
-            value={textareaValue}
-            onChange={(e) => setTextareaValue(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            className={cn(
-              getTextAreaStyles(),
-              className
-            )}
-            {...props}
-          />
+  return (
+    <div 
+      className={cn(
+        "w-full bg-white p-4 space-y-3",
+        containerClassName
+      )}
+    >
+      {/* User Profile Section */}
+      <div className="flex items-start space-x-4">
+        {/* Avatar */}
+        <div 
+          className={cn(
+            "w-[44px] h-[44px] rounded-full overflow-hidden flex-shrink-0 cursor-pointer",
+            avatarClassName
+          )}
+          onClick={handleUserClick}
+        >
+          {userProfile.avatar ? (
+            <img
+              src={userProfile.avatar}
+              alt={userProfile.avatarAlt || userProfile.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-brown-200 flex items-center justify-center">
+              <span className="text-brown-600 font-medium text-lg">
+                {userProfile.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
-        
-        {(helpText || errorText) && (
-          <p className={cn("text-xs", getHelpTextStyles(), helpTextClassName)}>
-            {isError ? errorText : helpText}
-          </p>
-        )}
-      </div>
-    );
-  }
-);
 
-TextArea.displayName = "TextArea";
+        {/* User Info */}
+        <div className="flex-1 min-w-0">
+          <div className="space-y-1">
+            {/* User Name */}
+            <h4 
+              className={cn(
+                "font-bold text-h4 text-brown-500 cursor-pointer hover:text-brown-500 transition-colors",
+                nameClassName
+              )}
+              onClick={handleUserClick}
+            >
+              {userProfile.name}
+            </h4>
+            
+            {/* Timestamp */}
+            <p 
+              className={cn(
+                "text-brown-400 text-body-sm",
+                timestampClassName
+              )}
+            >
+              {formatTimestamp(comment.createdAt)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Comment Text */}
+      <div 
+        className={cn(
+          "text-body-md text-brown-400 leading-relaxed cursor-pointer hover:text-brown-600 transition-colors",
+          textClassName
+        )}
+        onClick={handleCommentClick}
+      >
+        {comment.text}
+      </div>
+    </div>
+  );
+};
 
 export default TextArea;

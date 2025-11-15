@@ -170,100 +170,106 @@ const CategoryManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="min-h-screen bg-brown-100">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Category management</h1>
-            <Button
-              onClick={handleCreateCategory}
-              variant="default"
-              size="default"
-              className="!bg-brown-600 hover:!bg-brown-500 flex items-center gap-2"
-            >
-              <AddRoundLight className="w-5 h-5" />
-              Create category
-            </Button>
-          </div>
+      <div className="ml-[260px] px-[60px]">
+        {/* Header */}
+        <div className="flex justify-between items-center py-[32px]">
+          <h1 className="text-h3 text-brown-600 font-medium m-0">Category management</h1>
+          <Button
+            onClick={handleCreateCategory}
+            variant="default"
+            size="lg"
+            className="!bg-brown-600 hover:!bg-brown-500"
+          >
+            <AddRoundLight className="w-[24px] h-[24px]" />
+            Create category
+          </Button>
+        </div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
+        {/* Divider */}
+        <div className="h-[1px] bg-brown-300 mb-[40px] mx-[-60px]"></div>
 
           {/* Search */}
           <div className="mb-6">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              showSearchIcon={true}
-              showClearButton={false}
-            />
+            <div className="flex-1 max-w-[360px]">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                showSearchIcon={true}
+                showClearButton={false}
+                className="h-[48px] !rounded-lg text-body-lg font-medium"
+              />
+            </div>
           </div>
 
-          {/* Categories Table */}
-          <div className="bg-white rounded-lg border border-brown-300 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-brown-300">
-                  <th className="text-left px-6 py-4">
-                    <span className="text-body-lg font-semibold text-purple-600 border-b-2 border-purple-600 pb-1">
-                      Category
-                    </span>
-                  </th>
-                  <th className="w-[100px]"></th>
+        {/* Categories Table */}
+        <div className="bg-brown-50 rounded-lg border border-brown-300 overflow-hidden" style={{ borderRadius: '8px' }}>
+          <table className="article-table w-full border-collapse border-spacing-0" style={{ borderSpacing: 0, borderCollapse: 'collapse' }}>
+            <thead className="bg-brown-100" style={{ filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.035)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.03))' }}>
+              <tr>
+                <th className="text-left px-6 py-[12px] text-body-lg font-medium text-brown-400 border-b border-brown-300">
+                  Category
+                </th>
+                <th className="text-right px-6 py-[12px] text-body-lg font-medium text-brown-400 w-[100px] border-b border-brown-300">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}>
+                  <td colSpan={2} className="px-[24px] py-[20px] text-center text-brown-400 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    Loading...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
-                      Loading...
+              ) : filteredCategories.length === 0 ? (
+                <tr style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}>
+                  <td colSpan={2} className="px-[24px] py-[20px] text-center text-brown-400 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    No categories found
+                  </td>
+                </tr>
+              ) : (
+                filteredCategories.map((category, index) => (
+                  <tr
+                    key={category.id}
+                    className={`
+                      ${index % 2 === 0 ? 'bg-brown-100' : 'bg-brown-200'}
+                      hover:bg-brown-100/50
+                      m-0
+                    `}
+                    style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}
+                  >
+                    <td className="px-[24px] py-[20px] m-0 text-body-lg font-medium text-brown-600 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                      {category.name}
+                    </td>
+                    <td className="px-[24px] py-[20px] m-0" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEdit(category)}
+                          className="p-2 hover:bg-brown-200 rounded-md transition-colors"
+                          title="Edit"
+                        >
+                          <EditLight className="w-[24px] h-[24px] text-brown-400" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(category.id)}
+                          className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                          title="Delete"
+                        >
+                          <TrashLight className="w-[24px] h-[24px] text-brown-400 hover:text-red-500" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ) : filteredCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-brown-400">
-                      No categories found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCategories.map((category) => (
-                    <tr
-                      key={category.id}
-                      className="border-b border-brown-200 hover:bg-brown-50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="text-body-md text-brown-600">{category.name}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(category)}
-                            className="p-2 hover:bg-brown-100 rounded-md transition-colors"
-                            title="Edit"
-                          >
-                            <EditLight className="w-5 h-5 text-brown-400" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(category.id)}
-                            className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                            title="Delete"
-                          >
-                            <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from 'react-dom';
 import { useNavigate } from "react-router-dom";
-import { LogoIcon, BellLight, ExpandDownLight } from "@/icon/IconsAll";
+import { LogoIcon, BellLight, ExpandDownLight, UserDuotone, SignOutSquareLight, RefreshLight, NotebookLight } from "@/icon/IconsAll";
 import { Button } from "@/components/ui/Button";
 import ProfileDropdown from "./ProfileDropdown";
 import NotificationDropdown from "./NotificationDropdown";
@@ -15,11 +16,14 @@ interface NavBarProps {
 const NavBar: React.FC<NavBarProps> = ({ 
   isAdmin: propIsAdmin = false // Keep for backward compatibility
 }) => {
-  const { isAuthenticated, state } = useAuth();
+  const { isAuthenticated, state, logout } = useAuth();
   const { notifications: apiNotifications, unreadCount } = useNotifications(isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const [dropdownTop, setDropdownTop] = useState(73);
   const navigate = useNavigate();
 
   // Get user info from auth state
@@ -52,6 +56,27 @@ const NavBar: React.FC<NavBarProps> = ({
     }
   }, [state.user, isAuthenticated, userRole, isAdmin]);
 
+  // Update dropdown position to stay attached to navbar
+  useEffect(() => {
+    const updateDropdownPosition = () => {
+      if (navRef.current) {
+        const rect = navRef.current.getBoundingClientRect();
+        setDropdownTop(rect.bottom);
+      }
+    };
+
+    if (isMenuOpen) {
+      updateDropdownPosition();
+      window.addEventListener('scroll', updateDropdownPosition, true);
+      window.addEventListener('resize', updateDropdownPosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updateDropdownPosition, true);
+        window.removeEventListener('resize', updateDropdownPosition);
+      };
+    }
+  }, [isMenuOpen]);
+
   // Convert API notifications to NotificationData format
   const notifications = apiNotifications.map((notif: NotificationType) => ({
     id: notif.id,
@@ -76,7 +101,7 @@ const NavBar: React.FC<NavBarProps> = ({
   };
 
   return (
-    <nav className="bg-white border-b border-brown-300">
+    <nav ref={navRef} className="bg-white border-b border-brown-300">
       <div className="max-w-[1200px] mx-auto w-full">
         <div className="flex justify-between items-center px-4 py-4">
           {/* Logo */}
@@ -112,7 +137,7 @@ const NavBar: React.FC<NavBarProps> = ({
               <div className="relative">
                 <button 
                   onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                  className="relative p-2 hover:bg-brown-100 rounded-full transition-colors"
+                  className="relative w-12 h-12 flex items-center justify-center rounded-full border border-brown-200 hover:bg-brown-100 transition-colors"
                 >
                   <BellLight className="w-6 h-6 text-brown-400" />
                   {/* Notification Badge - only show if there are unread notifications */}
@@ -142,8 +167,9 @@ const NavBar: React.FC<NavBarProps> = ({
               </div>
 
               {/* Profile Section */}
-              <div className="relative">
+              <div>
                 <button
+                  ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                   className="flex items-center gap-3 hover:bg-brown-100 rounded-full py-1 pl-1 pr-3 transition-colors"
                 >
@@ -159,6 +185,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 <ProfileDropdown
                   isOpen={isProfileDropdownOpen}
                   onClose={() => setIsProfileDropdownOpen(false)}
+                  anchorEl={profileButtonRef.current}
                   isAdmin={isAdmin}
                 />
               </div>
@@ -177,47 +204,132 @@ const NavBar: React.FC<NavBarProps> = ({
         </div>
 
         {/* Mobile Menu Dropdown */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-brown-300 bg-white px-4 py-4 space-y-3">
-            {!isAuthenticated ? (
-              <>
-                <Button 
-                  onClick={handleLoginClick}
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                >
-                  Log in
-                </Button>
-                <Button 
-                  onClick={handleSignUpClick}
-                  variant="default"
-                  size="lg"
-                  className="w-full !text-white"
-                >
-                  Sign up
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-4">
-                {/* Profile Info */}
-                <div className="flex items-center gap-3 p-2">
-                  <img 
-                    src={userAvatar} 
-                    alt={userName}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <span className="text-body-lg text-brown-500 font-medium">{userName}</span>
+        {isMenuOpen && typeof document !== 'undefined' && createPortal(
+          <div 
+            className="fixed left-0 right-0 bg-white border-b border-brown-300 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06),0_-2px_4px_-1px_rgba(0,0,0,0.06)] z-[9998] md:hidden"
+            style={{ top: `${dropdownTop}px` }}
+          >
+            <div className="px-4 py-4 space-y-3">
+              {!isAuthenticated ? (
+                <>
+                  <Button 
+                    onClick={handleLoginClick}
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Log in
+                  </Button>
+                  <Button 
+                    onClick={handleSignUpClick}
+                    variant="default"
+                    size="lg"
+                    className="w-full !text-white"
+                  >
+                    Sign up
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  {/* Profile Info with Notification */}
+                  <div className="flex items-center justify-between px-2 py-3">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={userAvatar} 
+                        alt={userName}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <span className="text-body-lg text-brown-500 font-medium">{userName}</span>
+                    </div>
+                    {/* Notification Bell */}
+                    <button 
+                      onClick={() => {
+                        if (isAdmin) {
+                          navigate('/admin/notifications');
+                        } else {
+                          navigate('/notifications');
+                        }
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-12 h-12 flex items-center justify-center rounded-full border border-brown-200 hover:bg-brown-100 transition-colors"
+                    >
+                      <BellLight className="w-6 h-6 text-brown-400" />
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-[1px] bg-brown-300 my-2"></div>
+
+                  {/* Profile */}
+                  <button
+                    onClick={() => {
+                      if (isAdmin) {
+                        navigate('/admin/profile');
+                      } else {
+                        navigate('/profile?tab=profile');
+                      }
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brown-100 rounded-lg transition-colors"
+                  >
+                    <UserDuotone className="w-6 h-6 text-brown-400" />
+                    <span className="text-body-lg text-brown-500">Profile</span>
+                  </button>
+
+                  {/* Reset Password */}
+                  <button
+                    onClick={() => {
+                      if (isAdmin) {
+                        navigate('/admin/reset-password');
+                      } else {
+                        navigate('/profile?tab=reset-password');
+                      }
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brown-100 rounded-lg transition-colors"
+                  >
+                    <RefreshLight className="w-6 h-6 text-brown-400" />
+                    <span className="text-body-lg text-brown-500">Reset password</span>
+                  </button>
+
+                  {/* Admin Panel - Only show for admin users */}
+                  {isAdmin && (
+                    <>
+                      {/* Divider */}
+                      <div className="h-[1px] bg-brown-300 my-2"></div>
+                      
+                      <button
+                        onClick={() => {
+                          navigate('/admin/articles');
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brown-100 rounded-lg transition-colors"
+                      >
+                        <NotebookLight className="w-6 h-6 text-brown-400" />
+                        <span className="text-body-lg text-brown-500">Admin panel</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Divider */}
+                  <div className="h-[1px] bg-brown-300 my-2"></div>
+
+                  {/* Log out */}
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brown-100 rounded-lg transition-colors"
+                  >
+                    <SignOutSquareLight className="w-6 h-6 text-brown-400" />
+                    <span className="text-body-lg text-brown-500">Log out</span>
+                  </button>
                 </div>
-                
-                {/* Notification */}
-                <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brown-100 rounded-lg transition-colors">
-                  <BellLight className="w-6 h-6 text-brown-400" />
-                  <span className="text-body-lg text-brown-500">Notifications</span>
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </div>,
+          document.body
         )}
       </div>
     </nav>

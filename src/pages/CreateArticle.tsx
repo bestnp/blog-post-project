@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { ImgBoxLight } from "@/icon/IconsAll";
+import { ImgBoxLight, ExpandDownLight, TrashLight } from "@/icon/IconsAll";
+import TextAreaInput from "@/components/ui/TextAreaInput";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { blogApi } from "@/services/api";
 
 const API_BASE_URL = 'https://blog-post-project-api-five.vercel.app';
@@ -21,6 +23,7 @@ interface ArticleData {
 
 const CreateArticle: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id?: string }>();
   const [articleData, setArticleData] = useState<ArticleData>({
     thumbnailImage: null,
     category: "",
@@ -33,6 +36,8 @@ const CreateArticle: React.FC = () => {
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{
     title: string;
     message: string;
@@ -52,7 +57,55 @@ const CreateArticle: React.FC = () => {
     "Highlight": 4,
   };
   
+  const reverseCategoryMapping: { [key: number]: string } = {
+    1: "Cat",
+    2: "General",
+    3: "Inspiration",
+    4: "Highlight",
+  };
+  
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
+
+  // Load article data if editing
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const post = await blogApi.getPostById(parseInt(id));
+        
+        // Map category_id back to category name for display
+        const categoryName = post.category_name || post.category || reverseCategoryMapping[post.category_id || 1] || "General";
+        
+        setArticleData({
+          thumbnailImage: null,
+          category: categoryName,
+          authorName: post.author || "Thompson P.",
+          title: post.title,
+          introduction: post.description || "",
+          content: post.content || "",
+        });
+        
+        if (post.image) {
+          setThumbnailPreview(post.image);
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        setAlertConfig({
+          title: "Error",
+          message: "Failed to load article",
+          variant: "error",
+        });
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 5000);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticle();
+  }, [id]);
 
   const handleInputChange = (field: keyof ArticleData, value: string) => {
     setArticleData((prev) => ({
@@ -102,74 +155,117 @@ const CreateArticle: React.FC = () => {
   const handleSave = async (statusId: number) => {
     // Validate required fields
     if (!articleData.title.trim()) {
-      alert("Please enter article title");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter article title",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (!articleData.category) {
-      alert("Please select a category");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please select a category",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (statusId === 2 && !articleData.introduction.trim()) {
-      alert("Please enter introduction for published articles");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter introduction for published articles",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     if (statusId === 2 && !articleData.content.trim()) {
-      alert("Please enter content for published articles");
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please enter content for published articles",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
 
-    // Validate image file
-    if (!articleData.thumbnailImage) {
-      alert("Please select an image file.");
+    // Validate image file (only required for new articles)
+    if (!id && !articleData.thumbnailImage) {
+      setAlertConfig({
+        title: "Validation error",
+        message: "Please select an image file",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // สร้าง FormData สำหรับการส่งข้อมูลแบบ multipart/form-data
-      const formData = new FormData();
-
       // Get category_id from category name
       const categoryId = categoryMapping[articleData.category] || 1;
 
-      // เพิ่มข้อมูลทั้งหมดลงใน FormData
-      formData.append("title", articleData.title);
-      formData.append("category_id", categoryId.toString());
-      formData.append("description", articleData.introduction || "");
-      formData.append("content", articleData.content || "");
-      formData.append("status_id", statusId.toString());
-      formData.append("imageFile", articleData.thumbnailImage); // เพิ่มไฟล์รูปภาพ
+      if (id) {
+        // Update existing article
+        const formData = new FormData();
+        formData.append("title", articleData.title);
+        formData.append("category_id", categoryId.toString());
+        formData.append("description", articleData.introduction || "");
+        formData.append("content", articleData.content || "");
+        formData.append("status_id", statusId.toString());
 
-      // ส่งข้อมูลไปยัง Backend
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${API_BASE_URL}/assignments/upload`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${token}`, // ใช้ token สำหรับการยืนยันตัวตน
-          },
+        // If there's a new image file, append it
+        if (articleData.thumbnailImage) {
+          formData.append("imageFile", articleData.thumbnailImage);
+        } else if (thumbnailPreview && !thumbnailPreview.startsWith('blob:')) {
+          // Use existing image URL if no new image is uploaded
+          formData.append("image", thumbnailPreview);
         }
-      );
 
-      // Show success message
-      if (statusId === 1) {
+        await blogApi.updatePost(parseInt(id), formData);
+
         setAlertConfig({
-          title: "Create article and saved as draft",
-          message: "You can publish article later",
+          title: statusId === 1 ? "Article saved as draft" : "Article updated successfully!",
+          message: statusId === 1 ? "You can publish article later" : "Your changes have been saved",
           variant: "success",
         });
-        alert("Post created successfully and saved as draft!");
       } else {
+        // Create new article
+        const formData = new FormData();
+        formData.append("title", articleData.title);
+        formData.append("category_id", categoryId.toString());
+        formData.append("description", articleData.introduction || "");
+        formData.append("content", articleData.content || "");
+        formData.append("status_id", statusId.toString());
+        formData.append("imageFile", articleData.thumbnailImage!);
+
+        const token = localStorage.getItem("token");
+        await axios.post(
+          `${API_BASE_URL}/assignments/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
+
         setAlertConfig({
-          title: "Article published successfully!",
-          message: "Your article is now live and visible to readers",
+          title: statusId === 1 ? "Create article and saved as draft" : "Article published successfully!",
+          message: statusId === 1 ? "You can publish article later" : "Your article is now live and visible to readers",
           variant: "success",
         });
-        alert("Post created successfully!");
       }
+
       setShowAlert(true);
 
       // Navigate back to article management
@@ -177,9 +273,8 @@ const CreateArticle: React.FC = () => {
         navigate("/admin/articles");
       }, 2000);
     } catch (error: any) {
-      console.error("Error creating post:", error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to create post. Please try again.";
-      alert(errorMessage);
+      console.error("Error saving post:", error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to save post. Please try again.";
       setAlertConfig({
         title: "Error",
         message: errorMessage,
@@ -200,51 +295,92 @@ const CreateArticle: React.FC = () => {
     handleSave(2); // status_id = 2 for published
   };
 
+  const handleDeleteArticle = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await blogApi.deletePost(parseInt(id));
+      setShowDeleteModal(false);
+      setAlertConfig({
+        title: "Article deleted",
+        message: "Article has been permanently deleted",
+        variant: "success",
+      });
+      setShowAlert(true);
+
+      setTimeout(() => {
+        navigate("/admin/articles");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error deleting article:", error);
+      setAlertConfig({
+        title: "Error",
+        message: "Failed to delete article",
+        variant: "error",
+      });
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="min-h-screen bg-brown-100">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-[800px] mx-auto p-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Create article</h1>
-            <div className="flex gap-3">
-              <Button
-                onClick={handleSaveAsDraft}
-                variant="secondary"
-                size="default"
-                disabled={isLoading}
-              >
-                {isLoading ? "Saving..." : "Save as draft"}
-              </Button>
-              <Button
-                onClick={handleSaveAndPublish}
-                variant="default"
-                size="default"
-                className="!bg-brown-600 hover:!bg-brown-500"
-                disabled={isLoading}
-              >
-                {isLoading ? "Publishing..." : "Save and publish"}
-              </Button>
+      <div className="ml-[260px] px-[60px] pb-[120px]">
+        {/* Header */}
+        <div className="flex justify-between items-center py-[32px]">
+          <h1 className="text-h3 text-brown-600 font-medium m-0">{id ? "Edit article" : "Create article"}</h1>
+          <div className="flex gap-3">
+            <Button
+              onClick={handleSaveAsDraft}
+              variant="secondary"
+              size="lg"
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save as draft"}
+            </Button>
+            <Button
+              onClick={handleSaveAndPublish}
+              variant="default"
+              size="lg"
+              className="!bg-brown-600 hover:!bg-brown-500"
+              disabled={isLoading}
+            >
+              {isLoading ? "Publishing..." : "Save and publish"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-[1px] bg-brown-300 mb-[40px] mx-[-60px]"></div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brown-600"></div>
+              <p className="text-brown-600 text-body-lg">Loading article...</p>
             </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
-
-          {/* Form */}
+        ) : (
           <div className="space-y-6">
             {/* Thumbnail Image */}
             <div>
-              <label className="block text-body-md font-medium text-brown-600 mb-2">
+              <label className="block text-body-lg font-regular text-brown-400 mb-2">
                 Thumbnail Image
               </label>
               <div className="relative">
                 {thumbnailPreview ? (
-                  <div className="relative w-full h-[300px] bg-brown-100 rounded-lg border border-brown-300 overflow-hidden">
+                  <div 
+                    className="relative w-full h-[300px] bg-brown-100 rounded-lg border-2 border-dashed border-brown-300 overflow-hidden"
+                  >
                     <img
                       src={thumbnailPreview}
                       alt="Thumbnail preview"
@@ -264,7 +400,9 @@ const CreateArticle: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="w-full h-[300px] bg-brown-100 rounded-lg border border-brown-300 flex flex-col items-center justify-center">
+                  <div 
+                    className="w-full h-[300px] bg-brown-200 rounded-lg border-2 border-dashed border-brown-300 flex flex-col items-center justify-center"
+                  >
                     <ImgBoxLight className="w-16 h-16 text-brown-400 mb-4" />
                     <p className="text-body-md text-brown-400 mb-4">
                       Upload thumbnail image
@@ -293,51 +431,68 @@ const CreateArticle: React.FC = () => {
 
             {/* Category */}
             <div>
-              <label className="block text-body-md font-medium text-brown-600 mb-2">
+              <label className="block text-body-lg font-regular text-brown-400 mb-1">
                 Category
               </label>
-              <select
-                value={articleData.category}
-                onChange={(e) => handleInputChange("category", e.target.value)}
-                className="w-full h-[48px] px-4 rounded-lg border border-brown-300 bg-white text-brown-600 text-body-md focus:ring-brown-200 focus:ring-2 focus:border-brown-300 appearance-none cursor-pointer"
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={articleData.category}
+                  onChange={(e) => handleInputChange("category", e.target.value)}
+                  className="w-full h-[48px] pl-4 pr-8 rounded-lg border border-brown-300 bg-white text-brown-400 text-body-lg focus:ring-brown-200 focus:ring-2 focus:border-brown-300 appearance-none cursor-pointer"
+                >
+                  <option value="">Select category</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <ExpandDownLight className="w-4 h-4 text-brown-400" />
+                </div>
+              </div>
             </div>
 
             {/* Author name */}
-            <Input
-              label="Author name"
-              value={articleData.authorName}
-              onChange={(e) => handleInputChange("authorName", e.target.value)}
-              placeholder="Thompson P."
-              state="disabled"
-              disabled
-              showSearchIcon={false}
-              showClearButton={false}
-            />
+            <div className="opacity-40">
+              <label className="block text-body-lg font-regular text-brown-400 mb-1">
+                Author name
+              </label>
+              <Input
+                value={articleData.authorName}
+                onChange={(e) => handleInputChange("authorName", e.target.value)}
+                placeholder="Thompson P."
+                state="disabled"
+                disabled
+                showSearchIcon={false}
+                showClearButton={false}
+                containerClassName="space-y-0"
+                className="h-[48px] pl-4 pr-4"
+              />
+            </div>
 
             {/* Title */}
+            <div>
+            <label className="block text-body-lg font-regular text-brown-400 mb-1">
+            Title
+              </label>
             <Input
-              label="Title"
               value={articleData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Article title"
               showSearchIcon={false}
               showClearButton={false}
+              containerClassName="space-y-0"
+              className="h-[48px] pl-4 pr-4"
             />
+            </div>
 
             {/* Introduction */}
             <div>
-              <label className="block text-body-md font-medium text-brown-600 mb-2">
+              <label className="block text-body-lg font-regular text-brown-400 mb-1">
                 Introduction (max 120 letters)
               </label>
-              <textarea
+              <TextAreaInput
                 value={articleData.introduction}
                 onChange={(e) => {
                   const value = e.target.value.slice(0, 120);
@@ -346,7 +501,8 @@ const CreateArticle: React.FC = () => {
                 placeholder="Introduction"
                 maxLength={120}
                 rows={4}
-                className="w-full px-4 py-3 rounded-lg border border-brown-300 bg-white text-brown-600 text-body-md focus:ring-brown-200 focus:ring-2 focus:border-brown-300 resize-none"
+                state="default"
+                containerClassName="space-y-0"
               />
               <div className="text-right text-body-sm text-brown-400 mt-1">
                 {articleData.introduction.length}/120
@@ -355,19 +511,33 @@ const CreateArticle: React.FC = () => {
 
             {/* Content */}
             <div>
-              <label className="block text-body-md font-medium text-brown-600 mb-2">
+              <label className="block text-body-lg font-regular text-brown-400 mb-1">
                 Content
               </label>
-              <textarea
+              <TextAreaInput
                 value={articleData.content}
                 onChange={(e) => handleInputChange("content", e.target.value)}
                 placeholder="Content"
                 rows={15}
-                className="w-full px-4 py-3 rounded-lg border border-brown-300 bg-white text-brown-600 text-body-md focus:ring-brown-200 focus:ring-2 focus:border-brown-300 resize-none"
+                state="default"
+                containerClassName="space-y-0"
               />
             </div>
+
+            {/* Delete Article Button - Only show when editing */}
+            {id && (
+              <div>
+                <button
+                  onClick={handleDeleteArticle}
+                  className="flex items-center gap-2 text-body-md text-brown-400 hover:text-red-500 transition-colors"
+                >
+                  <TrashLight className="w-5 h-5" />
+                  <span>Delete article</span>
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+          )}
       </div>
 
       {/* Alert Notification - Fixed at bottom right */}
@@ -382,6 +552,18 @@ const CreateArticle: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete article"
+        message="Do you want to delete this article?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        backdropOpacity={40}
+      />
     </div>
   );
 };

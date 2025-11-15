@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminSidebar from "@/components/ui/AdminSidebar";
 import Input from "@/components/ui/Input";
-import TextArea from "@/components/ui/TextArea";
+import TextAreaInput from "@/components/ui/TextAreaInput";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { useAuth } from "@/context/authentication";
@@ -170,50 +170,49 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="min-h-screen bg-brown-100">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Profile</h1>
+      <div className="ml-[260px] px-[60px]">
+        {/* Header */}
+        <div className="flex justify-between items-center py-[32px]">
+          <h1 className="text-h3 text-brown-600 font-medium m-0">Profile</h1>
+          <Button
+            onClick={handleSave}
+            variant="default"
+            size="lg"
+            className="!bg-brown-600 hover:!bg-brown-500"
+            disabled={isSaving || loading}
+          >
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="h-[1px] bg-brown-300 mb-[40px] mx-[-60px]"></div>
+
+        {/* Content */}
+        <div>
+          {/* Profile Picture Section */}
+          <div className="flex items-center gap-4 mb-8">
+            <img 
+              src={profileData.avatar}
+              alt={profileData.name}
+              className="w-[60px] h-[60px] rounded-full object-cover border-2 border-brown-200"
+            />
             <Button
-              onClick={handleSave}
-              variant="default"
+              onClick={handleUploadPicture}
+              variant="secondary"
               size="default"
-              className="!bg-brown-600 hover:!bg-brown-500 min-w-[120px]"
-              disabled={isSaving || loading}
             >
-              {isSaving ? "Saving..." : "Save"}
+              Upload profile picture
             </Button>
           </div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
-
-          {/* Content */}
-          <div>
-            {/* Profile Picture Section */}
-            <div className="flex items-center gap-4 mb-8">
-              <img 
-                src={profileData.avatar}
-                alt={profileData.name}
-                className="w-[60px] h-[60px] rounded-full object-cover border-2 border-brown-200"
-              />
-              <Button
-                onClick={handleUploadPicture}
-                variant="secondary"
-                size="default"
-              >
-                Upload profile picture
-              </Button>
-            </div>
-
-            {/* Form Fields */}
-            <div className="space-y-6 max-w-[600px]">
+          {/* Form Fields */}
+          <div className="space-y-6 max-w-[600px]">
               <Input
                 label="Name"
                 value={profileData.name}
@@ -242,7 +241,7 @@ const Profile: React.FC = () => {
               />
 
               <div>
-                <TextArea
+                <TextAreaInput
                   label={`Bio (max ${MAX_BIO_LENGTH} letters)`}
                   value={profileData.bio}
                   onChange={(e) => handleInputChange("bio", e.target.value)}
@@ -256,7 +255,6 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Alert Notification */}
       {showAlert && (

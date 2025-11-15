@@ -17,9 +17,9 @@ const buttonVariants = cva(
           "bg-transparent underline underline-offset-4 !text-brown-600 hover:!text-brown-400 active:!text-brown-500 disabled:!text-brown-600/40",
       },
       size: {
-        default: "h-10 px-6 py-2 has-[>svg]:px-4 text-[14px]",
-        sm: "h-8 px-4 py-1 has-[>svg]:px-3 text-[12px]",
-        lg: "h-12 px-8 py-3 has-[>svg]:px-6 text-[16px]",
+        default: "px-[40px] py-[12px] text-[14px]",
+        sm: "px-[40px] py-[12px] text-[12px]",
+        lg: "px-[40px] py-[12px] text-[16px]",
         icon: "size-10",
       },
     },

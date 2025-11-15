@@ -7,7 +7,7 @@ const HeroSection: React.FC = () => {
       {/* Mobile Layout - Text First */}
       <div className="w-full text-center lg:hidden">
         <h1 className="text-4xl sm:text-5xl text-brown-600 font-bold leading-tight mb-4">
-          Stay<br />Informed,<br />Stay Inspired
+          Stay Informed,<br />Stay Inspired
         </h1>
         <p className="text-brown-400 text-body-sm mb-6">
           Discover a World of Knowledge at Your Fingertips.
