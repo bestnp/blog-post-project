@@ -137,8 +137,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             disabled={isDisabled}
             className={cn(
               getInputStyles(),
-              showSearchIcon && type !== "password" && !isPassword && "pl-10",
-              (showClearButton && value && !isPassword) && "pr-10",
+              showSearchIcon && type !== "password" && !isPassword && (showClearButton && value ? "pr-20" : "pr-10"),
+              (showClearButton && value && !isPassword) && !showSearchIcon && "pr-10",
               isPassword && "pr-10",
               className
             )}
@@ -146,7 +146,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
           
           {showSearchIcon && type !== "password" && !isPassword && (
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <div className={cn(
+              "absolute top-1/2 transform -translate-y-1/2 pointer-events-none",
+              (showClearButton && value) ? "right-10" : "right-3"
+            )}>
               <Search className={cn("h-4 w-4", getIconColor())} />
             </div>
           )}

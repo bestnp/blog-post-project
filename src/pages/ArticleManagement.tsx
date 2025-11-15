@@ -5,7 +5,7 @@ import { Alert } from "@/components/ui/Alert";
 import Input from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import { AddRoundLight, EditLight, TrashLight } from "@/icon/IconsAll";
+import { AddRoundLight, EditLight, TrashLight, ExpandDownLight } from "@/icon/IconsAll";
 import { blogApi, BlogPost } from "@/services/api";
 
 interface Article {
@@ -91,7 +91,7 @@ const ArticleManagement: React.FC = () => {
   }, [statusFilter, categoryFilter, searchQuery]);
 
   const handleEdit = (id: number) => {
-    navigate(`/admin/articles/edit/${id}`);
+    navigate(`/admin/articles/create/${id}`);
   };
 
   const handleDelete = (id: number) => {
@@ -136,159 +136,175 @@ const ArticleManagement: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Published":
-        return "text-green-600";
-      case "Draft":
-        return "text-orange-500";
-      case "Archived":
-        return "text-gray-500";
-      default:
-        return "text-brown-500";
+    if (!status) return { color: "#43403B" };
+    const normalizedStatus = status.toLowerCase().trim();
+    
+    // Check for published (case-insensitive, handles variations)
+    if (normalizedStatus.includes("publish")) {
+      return { color: "#12B279" }; // green-600 equivalent
     }
+    // Check for draft
+    if (normalizedStatus.includes("draft")) {
+      return { color: "#F2B68C" }; // blue-600
+    }
+    // Check for archived
+    if (normalizedStatus.includes("archived")) {
+      return { color: "#6b7280" }; // gray-500
+    }
+    
+    return { color: "#43403B" }; // brown-500 default
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
+    <div className="min-h-screen bg-brown-100">
       {/* Sidebar */}
       <AdminSidebar />
 
       {/* Main Content */}
-      <div className="flex-1 w-full px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-6xl">
-          {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-            <div>
-              <h1 className="text-h4 sm:text-h3 font-bold text-brown-600">Article management</h1>
-              <p className="text-sm text-brown-400">Create, edit, and review all published content.</p>
-            </div>
-            <Button
-              onClick={handleCreateArticle}
-              variant="default"
-              size="default"
-              className="!bg-brown-600 hover:!bg-brown-500 w-full sm:w-auto"
-            >
-              <AddRoundLight className="w-5 h-5" />
+      <div className="ml-[260px] px-[60px]">
+        {/* Header */}
+        <div className="flex justify-between items-center py-[32px]">
+          <h1 className="text-h3 text-brown-600 font-medium m-0">Article management</h1>
+          <Button
+            onClick={handleCreateArticle}
+            variant="default"
+            size="lg"
+            className="!bg-brown-600 hover:!bg-brown-500"
+          >
+              <AddRoundLight className="w-[24px] h-[24px]" />
               Create article
-            </Button>
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="h-[1px] bg-brown-300 mb-[40px] mx-[-60px]"></div>
+
+        {/* Filters */}
+        <div className="flex justify-between items-center gap-4 mb-6">
+          <div className="flex-1 max-w-[360px]">
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => setSearchQuery("")}
+              showSearchIcon={true}
+              showClearButton={true}
+              className="h-[48px] !rounded-lg text-body-lg font-medium"
+            />
           </div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-4 sm:-mx-6 lg:-mx-8"></div>
-
-          {/* Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-            <div className="w-full sm:max-w-xs">
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onClear={() => setSearchQuery("")}
-                showSearchIcon={true}
-                showClearButton={true}
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex gap-4">
+            <div className="relative">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
+                className="h-[48px] w-[200px] pl-4 pr-8 rounded-lg border border-brown-300 bg-white text-brown-400 text-body-lg font-medium focus:outline-none focus:ring-2 focus:ring-brown-200 appearance-none cursor-pointer"
               >
                 <option value="all">Status</option>
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
               </select>
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <ExpandDownLight className="w-4 h-4 text-brown-400" />
+              </div>
+            </div>
 
+            <div className="relative">
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="h-10 px-4 rounded-md border border-brown-300 bg-white text-brown-600 text-body-md focus:outline-none focus:ring-2 focus:ring-brown-200"
+                className="h-[48px] w-[200px] pl-4 pr-8 rounded-lg border border-brown-300 bg-white text-brown-400 text-body-lg font-medium focus:outline-none focus:ring-2 focus:ring-brown-200 appearance-none cursor-pointer"
               >
                 <option value="all">Category</option>
                 <option value="cat">Cat</option>
                 <option value="general">General</option>
                 <option value="inspiration">Inspiration</option>
               </select>
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <ExpandDownLight className="w-4 h-4 text-brown-400" />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Table */}
-          <div className="bg-brown-50 rounded-lg border border-brown-300 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px]">
-                <thead className="bg-brown-100">
-                  <tr>
-                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500">
-                      Article title
-                    </th>
-                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[200px]">
-                      Category
-                    </th>
-                    <th className="text-left px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[150px]">
-                      Status
-                    </th>
-                    <th className="text-right px-4 sm:px-6 py-4 text-body-sm sm:text-body-md font-medium text-brown-500 w-[120px]">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : articles.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-brown-400">
-                        No articles found
-                      </td>
-                    </tr>
-                  ) : (
-                    articles.map((article) => (
-                      <tr
-                        key={article.id}
-                        className="border-t border-brown-300 hover:bg-brown-100/50 transition-colors"
+        {/* Table */}
+        <div className="bg-brown-50 rounded-lg border border-brown-300 overflow-hidden" style={{ borderRadius: '8px' }}>
+          <table className="article-table w-full border-collapse border-spacing-0" style={{ borderSpacing: 0, borderCollapse: 'collapse' }}>
+            <thead className="bg-brown-100" style={{ filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.035)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.03))' }}>
+              <tr>
+                <th className="text-left px-6 py-[12px] text-body-lg font-medium text-brown-400 border-b border-brown-300">
+                  Article title
+                </th>
+                <th className="text-left px-6 py-[12px] text-body-lg font-medium text-brown-400 w-[200px] border-b border-brown-300">
+                  Category
+                </th>
+                <th className="text-left px-6 py-[12px] text-body-lg font-medium text-brown-400 w-[150px] border-b border-brown-300">
+                  Status
+                </th>
+                <th className="text-right px-6 py-[12px] text-body-lg font-medium text-brown-400 w-[100px] border-b border-brown-300">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}>
+                  <td colSpan={4} className="px-[24px] py-[20px] text-center text-brown-400 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    Loading...
+                  </td>
+                </tr>
+              ) : articles.length === 0 ? (
+                <tr style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}>
+                  <td colSpan={4} className="px-[24px] py-[20px] text-center text-brown-400 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    No articles found
+                  </td>
+                </tr>
+              ) : (
+                articles.map((article, index) => (
+                <tr
+                  key={article.id}
+                  className={`
+                    ${index % 2 === 0 ? 'bg-brown-100' : 'bg-brown-200'}
+                    hover:bg-brown-100/50
+                    m-0
+                  `}
+                  style={{ margin: 0, marginBottom: 0, padding: 0, lineHeight: 0 }}
+                >
+                  <td className="px-[24px] py-[20px] m-0 text-body-lg font-medium text-brown-600 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    {article.title}
+                  </td>
+                  <td className="px-[24px] py-[20px] m-0 text-body-lg font-medium text-brown-600 leading-none" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    {article.category}
+                  </td>
+                  <td className="px-[24px] py-[20px] m-0" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    <span className="flex items-center gap-1 text-body-lg font-medium leading-none" style={{ ...getStatusColor(article.status), lineHeight: '14px', fontSize: '14px' }}>
+                      <span className="w-2 h-2 rounded-full bg-current" style={getStatusColor(article.status)}></span>
+                      {article.status}
+                    </span>
+                  </td>
+                  <td className="px-[24px] py-[20px] m-0" style={{ margin: 0, marginBottom: 0, lineHeight: '14px', verticalAlign: 'middle', fontSize: '14px' }}>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(article.id)}
+                        className="p-2 hover:bg-brown-200 rounded-md transition-colors"
+                        title="Edit"
                       >
-                        <td className="px-4 sm:px-6 py-4 text-body-sm sm:text-body-md text-brown-600">
-                          {article.title}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 text-body-sm sm:text-body-md text-brown-600">
-                          {article.category}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <span className={`text-body-sm sm:text-body-md font-medium inline-flex items-center gap-1 ${getStatusColor(article.status)}`}>
-                            <span className="w-2 h-2 rounded-full bg-current"></span>
-                            {article.status}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleEdit(article.id)}
-                              className="p-2 hover:bg-brown-200 rounded-md transition-colors"
-                              title="Edit"
-                            >
-                              <EditLight className="w-5 h-5 text-brown-400" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(article.id)}
-                              className="p-2 hover:bg-red-100 rounded-md transition-colors"
-                              title="Delete"
-                            >
-                              <TrashLight className="w-5 h-5 text-brown-400 hover:text-red-500" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                        <EditLight className="w-[24px] h-[24px] text-brown-400" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(article.id)}
+                        className="p-2 hover:bg-red-100 rounded-md transition-colors"
+                        title="Delete"
+                      >
+                        <TrashLight className="w-[24px] h-[24px] text-brown-400 hover:text-red-500" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -306,7 +322,7 @@ const ArticleManagement: React.FC = () => {
 
       {/* Alert Notification */}
       {showAlert && (
-        <div className="fixed bottom-4 inset-x-4 z-50 mx-auto w-auto max-w-sm animate-in slide-in-from-bottom lg:inset-x-auto lg:right-6">
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}

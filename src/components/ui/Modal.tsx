@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
       >
         {/* Modal */}
         <div
-          className="bg-white rounded-[12px] shadow-xl max-w-[90vw] p-6 relative"
+          className="bg-brown-100 rounded-[12px] shadow-xl max-w-[90vw] p-6 pt-[64px] pb-[40px] relative"
           style={{ width }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -63,20 +63,20 @@ const Modal: React.FC<ModalProps> = ({
               className="absolute top-4 right-4 p-1 hover:bg-brown-100 rounded-full transition-colors"
               aria-label="Close modal"
             >
-              <CloseRoundLight className="w-6 h-6 text-brown-400" />
+              <CloseRoundLight className="w-[24px] h-[24px] text-brown-600" />
             </button>
           )}
 
           {/* Title */}
           {title && (
-            <h3 className="text-h4 font-bold text-brown-600 mb-3 pr-8">
+            <h3 className="text-h3 font-bold text-brown-600 mb-3 text-center">
               {title}
             </h3>
           )}
 
           {/* Message */}
           {message && (
-            <p className="text-body-md text-brown-400 mb-6">
+            <p className="text-body-lg text-brown-400 mb-6 text-center mt-4">
               {message}
             </p>
           )}
@@ -86,7 +86,7 @@ const Modal: React.FC<ModalProps> = ({
 
           {/* Buttons */}
           {buttons.length > 0 && (
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-center gap-3 mt-6">
               {buttons.map((button, index) => (
                 <Button
                   key={index}

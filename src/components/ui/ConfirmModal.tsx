@@ -34,12 +34,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           label: cancelText,
           onClick: onClose,
           variant: "secondary",
+          className: "!bg-white !border !border-brown-200 !text-brown-600 hover:!bg-brown-100 !rounded-full",
         },
         {
           label: confirmText,
           onClick: onConfirm,
           variant: "default",
-          className: "!bg-brown-600 hover:!bg-brown-500",
+          className: "!bg-brown-600 hover:!bg-brown-500 !text-white !rounded-full",
         },
       ]}
     />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import CommentCard, { CommentCardProps } from "./CommentCard";
+import TextArea, { CommentCardProps } from "./TextArea";
 
 export interface Comment {
   id: string;
@@ -130,7 +130,7 @@ const CommentList: React.FC<CommentListProps> = ({
   return (
     <div className={cn("space-y-4", className)}>
       {comments.map((comment) => (
-        <CommentCard
+        <TextArea
           key={comment.id}
           userProfile={comment.userProfile}
           comment={comment}

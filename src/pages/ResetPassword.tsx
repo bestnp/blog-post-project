@@ -119,34 +119,33 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="min-h-screen bg-brown-100">
       {/* Admin Sidebar */}
       <AdminSidebar userName="Admin" />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-h3 font-bold text-brown-600">Reset password</h1>
-            <Button
-              onClick={handleResetPassword}
-              variant="default"
-              size="default"
-              className="!bg-brown-600 hover:!bg-brown-500 min-w-[160px]"
-              disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-            >
-              {isLoading ? 'Resetting...' : 'Reset password'}
-            </Button>
-          </div>
+      <div className="ml-[260px] px-[60px]">
+        {/* Header */}
+        <div className="flex justify-between items-center py-[32px]">
+          <h1 className="text-h3 text-brown-600 font-medium m-0">Reset password</h1>
+          <Button
+            onClick={handleResetPassword}
+            variant="default"
+            size="lg"
+            className="!bg-brown-600 hover:!bg-brown-500"
+            disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+          >
+            {isLoading ? 'Resetting...' : 'Reset password'}
+          </Button>
+        </div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-brown-300 mb-6 -mx-8"></div>
+        {/* Divider */}
+        <div className="h-[1px] bg-brown-300 mb-[40px] mx-[-60px]"></div>
 
-          {/* Content */}
-          <div>
-            {/* Form Fields */}
-            <div className="space-y-6 max-w-[600px]">
+        {/* Content */}
+        <div>
+          {/* Form Fields */}
+          <div className="space-y-6 max-w-[600px]">
               <Input
                 label="Current password"
                 type="password"
@@ -179,7 +178,6 @@ const ResetPassword: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Confirm Reset Password Modal */}
       <ConfirmModal

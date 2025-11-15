@@ -142,11 +142,11 @@ const SignUp: React.FC = () => {
       <NavBar />
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-[798px] bg-brown-200 rounded-[16px] px-[120px] py-[60px]">
+      <div className="flex-1 flex items-center justify-center px-4 pt-10 pb-8 lg:py-8">
+        <div className="w-full max-w-[798px] bg-brown-200 rounded-[16px] px-6 py-8 lg:px-[120px] lg:py-[60px]">
           <h2 className="text-h2 font-medium text-center mb-8">Sign up</h2>
 
-          <form onSubmit={handleSignUp} className="space-y-6">
+          <form onSubmit={handleSignUp} className="space-y-4 lg:space-y-6">
             {/* Full Name */}
             <div>
               <label className="block text-body-lg text-brown-400 mb-2">
@@ -230,12 +230,12 @@ const SignUp: React.FC = () => {
             </div>
 
             {/* Sign Up Button */}
-            <div className="flex justify-center">
+            <div className="flex justify-center pt-2">
               <Button
                 type="submit"
                 variant="default"
                 size="lg"
-                className="px-[40px] py-[12px] !text-white !bg-brown-600"
+                className="w-full lg:w-auto px-[40px] py-[12px] !text-white !bg-brown-600"
                 disabled={state.loading === true}
               >
                 {state.loading ? 'Signing up...' : 'Sign up'}
@@ -285,9 +285,9 @@ const SignUp: React.FC = () => {
         </div>
       )}
 
-      {/* Alert Notification */}
+      {/* Alert Notification - Fixed at bottom center (responsive) / bottom right (desktop) */}
       {showAlert && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] animate-in slide-in-from-right">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-6 z-50 w-[calc(100%-2rem)] lg:w-[400px] max-w-[calc(100vw-2rem)] lg:max-w-[400px] animate-in slide-in-from-right">
           <Alert
             variant={alertConfig.variant}
             title={alertConfig.title}

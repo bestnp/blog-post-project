@@ -14,7 +14,7 @@ export default function AppButton({
   ...props
 }: AppButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-[8px] px-[20px] py-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brown-300 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center rounded-[8px] px-[40px] py-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brown-300 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants: Record<AppButtonVariant, string> = {
     default: "bg-black text-brown-100 hover:bg-black/90",

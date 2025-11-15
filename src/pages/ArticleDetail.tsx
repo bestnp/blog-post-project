@@ -10,7 +10,7 @@ import Footer from '@/components/ui/Footer';
 import LoginDialog from '@/components/ui/LoginDialog';
 import { Button } from '@/components/ui/Button';
 import TextArea from '@/components/ui/TextArea';
-import CommentCard from '@/components/ui/CommentCard';
+import TextAreaInput from '@/components/ui/TextAreaInput';
 import { useAuth } from '@/context/authentication';
 
 const ArticleDetail: React.FC = () => {
@@ -223,39 +223,62 @@ const ArticleDetail: React.FC = () => {
               </div>
             </article>
 
+            {/* Author Blog Sidebar */}
+            <aside className="author-blog-sidebar">
+              <div className="bg-brown-200 px-6 py-6 rounded-[16px] w-full lg:w-[305px] h-auto lg:h-auto shadow-md mb-[40px]">
+                <div className="flex items-start space-x-4 mb-4">
+                  <img
+                    src={author?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face'}
+                    alt={post.author}
+                    className="w-[60px] h-[60px] rounded-full object-cover"
+                  />
+                  <div>
+                    <h3 className="text-body-sm text-brown-400 mb-1">Author</h3>
+                    <h4 className="text-h4 font-bold text-brown-500">{author?.name || post.author}</h4>
+                  </div>
+                </div>
+                <hr className="border-brown-300 mb-4" />
+                <div className="text-brown-400 text-body-lg leading-relaxed whitespace-pre-line">
+                  {author?.bio || 'No bio available'}
+                </div>
+              </div>
+            </aside>
+              
             {/* Social Sharing Section */}
-            <div className="bg-brown-200 rounded-[16px] px-6 py-4 mb-8">
-              <div className="flex items-center justify-between">
+            <div className="mb-8 lg:bg-brown-200 lg:rounded-[16px] lg:px-6 lg:py-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                 {/* Likes */}
                 <button 
                   onClick={handleLikeClick}
-                  className="flex items-center gap-2 px-[40px] py-[12px] bg-white border border-brown-400 rounded-full text-brown-600 hover:bg-brown-50 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full lg:w-auto px-6 lg:px-[40px] py-3 lg:py-[12px] bg-white border border-brown-300 lg:border-brown-400 rounded-full text-brown-600 hover:bg-brown-50 transition-colors"
                 >
                   <HappyLight className="w-6 h-6 text-brown-600" />
                   <span className="text-brown-600 font-medium text-body-lg">{post.likes_count || post.likes || 0}</span>
                 </button>
                 
                 {/* Copy Link Button and Social Icons */}
-                <div className="flex items-center gap-3">
+                <div className="flex flex-row items-center gap-3 w-full lg:w-auto">
                   {/* Copy Link Button */}
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center gap-2 px-[40px] py-[12px] bg-white border border-brown-400 rounded-full text-brown-600 hover:bg-brown-50 hover:border-brown-500 transition-colors cursor-pointer"
+                    className="flex items-center justify-center gap-2 flex-1 lg:flex-none lg:w-auto px-4 lg:px-[40px] py-3 lg:py-[12px] bg-white border border-brown-300 lg:border-brown-400 rounded-full text-brown-600 hover:bg-brown-50 hover:border-brown-500 transition-colors cursor-pointer"
                   >
                     <FileLight className="w-5 h-5" />
                     <span className="text-body-lg font-medium">Copy link</span>
                   </button>
                   
                   {/* Social Media Icons */}
-                  <button className="hover:opacity-80 transition-opacity">
-                    <FacebookIcon className="w-[48px] h-[48px] text-[#1877F2]" />
-                  </button>
-                  <button className="hover:opacity-80 transition-opacity">
-                    <LinkedInIcon className="w-[48px] h-[48px] text-[#0077B5]" />
-                  </button>
-                  <button className="hover:opacity-80 transition-opacity">
-                    <TwitterIcon className="w-[48px] h-[48px] text-[#55ACEE]" />
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button className="hover:opacity-80 transition-opacity">
+                      <FacebookIcon className="w-12 h-12 lg:w-[48px] lg:h-[48px] text-[#1877F2]" />
+                    </button>
+                    <button className="hover:opacity-80 transition-opacity">
+                      <LinkedInIcon className="w-12 h-12 lg:w-[48px] lg:h-[48px] text-[#0077B5]" />
+                    </button>
+                    <button className="hover:opacity-80 transition-opacity">
+                      <TwitterIcon className="w-12 h-12 lg:w-[48px] lg:h-[48px] text-[#55ACEE]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -268,19 +291,19 @@ const ArticleDetail: React.FC = () => {
               
               {/* Comment Input */}
               <div className="mb-8">
-                <TextArea
+                <TextAreaInput
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="What are your thoughts?"
                   state="default"
                 />
-                <div className="flex justify-end mt-2">
+                <div className="flex justify-start mt-2">
                   <Button
                     onClick={handleSendComment}
                     disabled={commentsLoading}
                     variant="default"
                     size="lg"
-                    className="!text-white"
+                    className="!text-white px-8"
                   >
                     {commentsLoading ? 'Sending...' : 'Send'}
                   </Button>
@@ -290,7 +313,7 @@ const ArticleDetail: React.FC = () => {
               {/* Comments List */}
               <div className="space-y-6">
                 {comments.map((commentItem) => (
-                  <CommentCard
+                  <TextArea
                     key={commentItem.id}
                     userProfile={{
                       name: commentItem.author,
@@ -308,26 +331,7 @@ const ArticleDetail: React.FC = () => {
             </section>
           </div>
 
-          {/* Author Blog Sidebar */}
-          <aside className="author-blog-sidebar">
-            <div className="bg-brown-200 px-6 py-6 rounded-[16px] w-full lg:w-[305px] h-auto lg:h-auto shadow-md">
-              <div className="flex items-start space-x-4 mb-4">
-                <img
-                  src={author?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face'}
-                  alt={post.author}
-                  className="w-[60px] h-[60px] rounded-full object-cover"
-                />
-                <div>
-                  <h3 className="text-body-sm text-brown-400 mb-1">Author</h3>
-                  <h4 className="text-h4 font-bold text-brown-500">{author?.name || post.author}</h4>
-                </div>
-              </div>
-              <hr className="border-brown-300 mb-4" />
-              <div className="text-brown-400 text-body-lg leading-relaxed whitespace-pre-line">
-                {author?.bio || 'No bio available'}
-              </div>
-            </div>
-          </aside>
+
         </div>
       </div>
       
